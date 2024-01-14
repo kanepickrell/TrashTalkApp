@@ -3,6 +3,30 @@ import {View, Text} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import {StyleSheet, Dimensions} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
+// import {requestLocationPermission} from './your-location-permission-module';
+import {PermissionsAndroid} from 'react-native';
+
+async function requestLocationPermission() {
+  try {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      {
+        title: 'TrashTalk Location Permission',
+        message: 'TrashTalk needs access to your location',
+        buttonNeutral: 'Ask Me Later',
+        buttonNegative: 'Cancel',
+        buttonPositive: 'OK',
+      },
+    );
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      console.log('You can use the location');
+    } else {
+      console.log('Location permission denied');
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+}
 
 const MapScreen = () => {
   // Example coordinates for trash pickup locations
@@ -15,19 +39,24 @@ const MapScreen = () => {
   const [currentRegion, setCurrentRegion] = useState(null);
 
   useEffect(() => {
-    Geolocation.getCurrentPosition(
-      position => {
-        const {latitude, longitude} = position.coords;
-        setCurrentRegion({
-          latitude,
-          longitude,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        });
-      },
-      error => console.log(error),
-      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
-    );
+    const requestAndLoadLocation = async () => {
+      await requestLocationPermission(); // Call the function
+      Geolocation.getCurrentPosition(
+        position => {
+          const {latitude, longitude} = position.coords;
+          setCurrentRegion({
+            latitude,
+            longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          });
+        },
+        error => console.log(error),
+        {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
+      );
+    };
+
+    requestAndLoadLocation();
   }, []);
 
   return (
