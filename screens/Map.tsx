@@ -1,10 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text} from 'react-native';
+import {View, StyleSheet, Dimensions, PermissionsAndroid} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
-import {StyleSheet, Dimensions} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
-// import {requestLocationPermission} from './your-location-permission-module';
-import {PermissionsAndroid} from 'react-native';
 
 async function requestLocationPermission() {
   try {
@@ -29,26 +26,30 @@ async function requestLocationPermission() {
 }
 
 const MapScreen = () => {
-  // Example coordinates for trash pickup locations
   const trashPickups = [
     {id: 1, latitude: 37.78825, longitude: -122.4324},
     {id: 2, latitude: 37.78925, longitude: -122.4334},
-    // Add more coordinates as needed
   ];
 
-  const [currentRegion, setCurrentRegion] = useState(null);
+  const defaultRegion = {
+    latitude: 0,
+    longitude: 0,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  };
+
+  const [currentRegion, setCurrentRegion] = useState(defaultRegion);
 
   useEffect(() => {
     const requestAndLoadLocation = async () => {
-      await requestLocationPermission(); // Call the function
+      await requestLocationPermission();
       Geolocation.getCurrentPosition(
         position => {
           const {latitude, longitude} = position.coords;
           setCurrentRegion({
+            ...defaultRegion,
             latitude,
             longitude,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
           });
         },
         error => console.log(error),
@@ -61,7 +62,11 @@ const MapScreen = () => {
 
   return (
     <View style={styles.container}>
-      <MapView style={styles.map} initialRegion={currentRegion}>
+      <MapView
+        style={styles.map}
+        initialRegion={
+          currentRegion.latitude !== 0 ? currentRegion : undefined
+        }>
         {trashPickups.map(pickup => (
           <Marker
             key={pickup.id}

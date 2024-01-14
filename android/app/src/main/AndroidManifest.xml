@@ -18,6 +18,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:allowBackup="false"
         android:theme="@style/AppTheme">
+        <!-- Google Maps API Key -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyC-CsNB1CiTmVgr_QqAjHG1oYiE43v3ic4"/>
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
