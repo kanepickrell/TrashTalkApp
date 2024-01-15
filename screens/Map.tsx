@@ -50,14 +50,6 @@ const fetchCoordinates = async () => {
 // const coordinates = fetchCoordinates();
 
 const MapScreen = () => {
-  // const trashPickups = [
-  //   {id: 1, latitude: 29.495778, longitude: -98.4464974},
-  //   {id: 2, latitude: 29.495798, longitude: -98.4464984},
-  //   {id: 3, latitude: 29.495779, longitude: -98.4464944},
-  //   {id: 4, latitude: 29.495768, longitude: -98.4464992},
-  //   {id: 5, latitude: 29.495758, longitude: -98.4464932},
-  // ];
-
   const defaultRegion = {
     latitude: 0,
     longitude: 0,
