@@ -3,6 +3,7 @@ import {View, Text, StyleSheet, Button, Alert} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 // import firebase from './firebase';
 import firebase from 'firebase/compat/app';
+import db from '../firebaseConfig';
 
 const Tracker = () => {
   const [isTracking, setIsTracking] = useState(false);
@@ -13,7 +14,7 @@ const Tracker = () => {
       async position => {
         const {latitude, longitude} = position.coords;
         try {
-          await firebase.firestore().collection('locations').add({
+          await db.collection('locations').add({
             latitude,
             longitude,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
