@@ -1,26 +1,26 @@
-import React from "react";
-import { View, Text, Button, StyleSheet } from "react-native";
-import { useNavigation } from "@react-navigation/native"; // Import useNavigation
-import { Image } from "react-native";
+import React from 'react';
+import {View, Text, Button, StyleSheet} from 'react-native';
+import {useNavigation} from '@react-navigation/native'; // Import useNavigation
+import {Image} from 'react-native';
 
 const Home = () => {
   const navigation = useNavigation(); // Use the useNavigation hook
 
   return (
     <View style={styles.container}>
-      <Image source={require("../assets/trashtalk.png")} style={styles.logo} />
+      <Image source={require('../assets/trashtalk.png')} style={styles.logo} />
 
       {/* Buttons at the bottom */}
       <View style={styles.buttonContainer}>
         <Button
           title="Map"
-          color={"#2e5248"}
-          onPress={() => navigation.navigate("Map")}
+          color={'#2e5248'}
+          onPress={() => navigation.navigate('Map')}
         />
         <Button
           title="Tracker"
-          color={"#2e5248"}
-          onPress={() => navigation.navigate("Tracker")} // Make sure the Tracker screen is defined in your navigator
+          color={'#2e5248'}
+          onPress={() => navigation.navigate('Tracker')} // Make sure the Tracker screen is defined in your navigator
         />
       </View>
     </View>
@@ -31,21 +31,21 @@ const Home = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
-    backgroundColor: "#fff", // White background
+    backgroundColor: '#fff', // White background
   },
   text: {
     fontSize: 20,
     marginBottom: 20,
   },
   buttonContainer: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 50,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: "100%",
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
   },
 
   logo: {
