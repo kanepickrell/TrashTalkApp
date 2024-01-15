@@ -10,7 +10,7 @@ import MapView, {Marker} from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
 
 // San Antonio coordinates as a fallback
-const SAN_ANTONIO_COORDS = {latitude: 29.4241, longitude: -98.4936};
+const MANHATTEN_KS_COORDS = {latitude: 39.1836, longitude: 96.5717};
 
 async function requestLocationPermission() {
   try {
@@ -44,6 +44,7 @@ const MapScreen = () => {
     {id: 3, latitude: 29.495779, longitude: -98.4464944},
     {id: 4, latitude: 29.495768, longitude: -98.4464992},
     {id: 5, latitude: 29.495758, longitude: -98.4464932},
+    {id: 6, latitude: 29.4963686, longitude: -98.4466652},
   ];
 
   const defaultRegion = {
@@ -66,8 +67,8 @@ const MapScreen = () => {
         // Optionally set a fallback location (San Antonio) or handle the error
         setCurrentRegion({
           ...defaultRegion,
-          latitude: SAN_ANTONIO_COORDS.latitude,
-          longitude: SAN_ANTONIO_COORDS.longitude,
+          latitude: MANHATTEN_KS_COORDS.latitude,
+          longitude: MANHATTEN_KS_COORDS.longitude,
         });
       }
     };
@@ -94,8 +95,8 @@ const MapScreen = () => {
         // Use San Antonio as fallback
         setCurrentRegion({
           ...defaultRegion,
-          latitude: SAN_ANTONIO_COORDS.latitude,
-          longitude: SAN_ANTONIO_COORDS.longitude,
+          latitude: MANHATTEN_KS_COORDS.latitude,
+          longitude: MANHATTEN_KS_COORDS.longitude,
         });
       },
       {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},

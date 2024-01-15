@@ -1,33 +1,37 @@
 import React, {useState} from 'react';
 import {View, Text, StyleSheet, Button, Alert} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
-// import firebase from './firebase';
-import firebase from 'firebase/compat/app';
-import db from '../firebaseConfig';
+// import firebase from 'firebase/compat/app';
+// import 'firebase/compat/firestore'; // Import Firestore from compat
+// import db from '../firebaseConfig';
 
 const Tracker = () => {
   const [isTracking, setIsTracking] = useState(false);
+  const [position, setPosition] = useState({latitude: null, longitude: null});
 
   const trackLocation = () => {
     setIsTracking(true);
     Geolocation.getCurrentPosition(
-      async position => {
+      position => {
         const {latitude, longitude} = position.coords;
-        try {
-          await db.collection('locations').add({
-            latitude,
-            longitude,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-          });
-          Alert.alert(
-            'Location Tracked',
-            `Latitude: ${latitude}, Longitude: ${longitude}`,
-          );
-        } catch (error) {
-          console.error(error);
-          Alert.alert('Error', 'Failed to track location');
-        }
+        setPosition({latitude, longitude}); // Save position to state
+        Alert.alert(
+          'Location Tracked',
+          `Latitude: ${latitude}, Longitude: ${longitude}`,
+        );
         setIsTracking(false);
+
+        // Firebase code is commented out
+        // try {
+        //   await db.collection('locations').add({
+        //     latitude,
+        //     longitude,
+        //     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        //   });
+        // } catch (error) {
+        //   console.error(error);
+        //   Alert.alert('Error', 'Failed to track location');
+        // }
       },
       error => {
         console.error(error);
@@ -46,6 +50,13 @@ const Tracker = () => {
         onPress={trackLocation}
         disabled={isTracking}
       />
+      {position.latitude && position.longitude && (
+        <Text>
+          Current Position: {'\n'}
+          Latitude: {position.latitude} {'\n'}
+          Longitude: {position.longitude}
+        </Text>
+      )}
     </View>
   );
 };
