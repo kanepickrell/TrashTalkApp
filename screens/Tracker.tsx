@@ -3,6 +3,7 @@ import {View, Text, StyleSheet, Button, Alert} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import {getFirestore, collection, addDoc} from 'firebase/firestore';
 import db from '../firebaseConfig';
+import auth from '@react-native-firebase/auth';
 
 const Tracker = () => {
   const [isTracking, setIsTracking] = useState(false);
@@ -38,12 +39,21 @@ const Tracker = () => {
 
   const uploadCoordinatesToFirestore = async () => {
     const collectionRef = collection(db, 'locations');
+    const currentUser = auth().currentUser;
+    if (!currentUser) {
+      console.error('No user is signed in');
+      return;
+    }
+
+    const userId = currentUser.uid;
+    const name = currentUser.displayName || 'Anonymous'; // Use 'Anonymous' if displayName is null
+
     try {
       for (const coord of tempCoordinates) {
         await addDoc(collectionRef, {
           ...coord,
-          userId: 'DvoLe0z9Q3Ir2l5gW8rh', // Replace with actual user ID
-          name: 'John Doe', // Replace with actual name
+          userId,
+          name,
         });
       }
       console.log('All coordinates uploaded');
