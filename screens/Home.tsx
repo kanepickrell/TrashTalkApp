@@ -22,6 +22,11 @@ const Home = () => {
           color={'#2e5248'}
           onPress={() => navigation.navigate('Tracker')} // Make sure the Tracker screen is defined in your navigator
         />
+        <Button
+          title="Logout"
+          color={'#2e5248'}
+          onPress={() => navigation.navigate('Login')} // Make sure the Login screen is defined in your navigator
+        />
       </View>
     </View>
   );

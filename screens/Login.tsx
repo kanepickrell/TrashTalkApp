@@ -1,63 +1,53 @@
-import React, {useState} from 'react';
-import {View, TextInput, Button, StyleSheet, Alert} from 'react-native';
+import React from 'react';
 import {
-  getAuth,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-} from 'firebase/auth';
+  GoogleSignin,
+  GoogleSigninButton,
+} from '@react-native-google-signin/google-signin';
+import auth from '@react-native-firebase/auth';
+import {View, StyleSheet, Alert} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import Home from './Home';
 
+GoogleSignin.configure({
+  webClientId:
+    '792835698338-ab3s5kdrouauqq31afdo5thp2p9hsnc2.apps.googleusercontent.com',
+});
+
+type RootStackParamList = {
+  TrashTalk: undefined;
+  Map: undefined;
+  Tracker: undefined;
+  Login: undefined;
+};
+
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const navigation = useNavigation();
+  const googleSignIn = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      const googleCredential = auth.GoogleAuthProvider.credential(
+        userInfo.idToken,
+      );
+      await auth().signInWithCredential(googleCredential);
 
-  const handleLogin = () => {
-    const auth = getAuth();
-    signInWithEmailAndPassword(auth, email, password)
-      .then(userCredential => {
-        // Signed in
-        navigation.navigate('Home'); // Navigate to Home screen on success
-      })
-      .catch(error => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        Alert.alert('Login Failed', errorMessage);
-      });
-  };
+      // Navigates to home page
+      navigation.navigate('Basecamp');
 
-  const handleSignUp = () => {
-    const auth = getAuth();
-    createUserWithEmailAndPassword(auth, email, password)
-      .then(userCredential => {
-        // Signed in
-        navigation.navigate('Home'); // Navigate to Home screen on success
-      })
-      .catch(error => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        Alert.alert('Sign Up Failed', errorMessage);
-      });
+      //   Alert.alert('Success', 'You are signed in!');
+    } catch (error) {
+      console.error('Google Sign-In Error:', error);
+      Alert.alert('Sign-In Error', 'Failed to sign in with Google.');
+    }
   };
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        onChangeText={setEmail}
-        value={email}
-        placeholder="Enter your email"
+      <GoogleSigninButton
+        onPress={googleSignIn}
+        size={GoogleSigninButton.Size.Wide}
+        color={GoogleSigninButton.Color.Dark}
       />
-      <TextInput
-        style={styles.input}
-        onChangeText={setPassword}
-        value={password}
-        placeholder="Enter your password"
-        secureTextEntry
-      />
-      <Button title="Log In" onPress={handleLogin} />
-      <Button title="Sign Up" onPress={handleSignUp} />
     </View>
   );
 };
@@ -65,16 +55,11 @@ const Login = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  input: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
-    width: '80%',
-  },
+  // No need for custom styles for the Google Signin Button as it uses its own styles
 });
 
 export default Login;

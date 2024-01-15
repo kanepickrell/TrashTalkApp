@@ -12,7 +12,12 @@
           "package_name": "com.kanepickrel.trashtalkapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "792835698338-ab3s5kdrouauqq31afdo5thp2p9hsnc2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCbvfCNMcPP5_AsB9ZFkO1_2eL8A2fKl2s"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "792835698338-ab3s5kdrouauqq31afdo5thp2p9hsnc2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

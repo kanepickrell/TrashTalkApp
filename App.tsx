@@ -14,7 +14,7 @@ import Tracker from './screens/Tracker.tsx';
 import Login from './screens/Login.tsx';
 
 type RootStackParamList = {
-  TrashTalk: undefined;
+  Basecamp: undefined;
   Map: undefined;
   Tracker: undefined;
   Login: undefined;
@@ -28,7 +28,7 @@ const App: React.FC = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen name="TrashTalk" component={Home} />
+        <Stack.Screen name="Basecamp" component={Home} />
         <Stack.Screen name="Map" component={Map} />
         <Stack.Screen name="Tracker" component={Tracker} />
         <Stack.Screen name="Login" component={Login} />
