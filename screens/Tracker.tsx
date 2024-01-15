@@ -1,9 +1,13 @@
 import React, {useState} from 'react';
 import {View, Text, StyleSheet, Button, Alert} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
-// import firebase from 'firebase/compat/app';
-// import 'firebase/compat/firestore'; // Import Firestore from compat
-// import db from '../firebaseConfig';
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  serverTimestamp,
+} from 'firebase/firestore';
+import db from '../firebaseConfig';
 
 const Tracker = () => {
   const [isTracking, setIsTracking] = useState(false);
@@ -14,24 +18,38 @@ const Tracker = () => {
     Geolocation.getCurrentPosition(
       position => {
         const {latitude, longitude} = position.coords;
-        setPosition({latitude, longitude}); // Save position to state
-        Alert.alert(
-          'Location Tracked',
-          `Latitude: ${latitude}, Longitude: ${longitude}`,
-        );
-        setIsTracking(false);
+        setPosition({latitude, longitude});
 
-        // Firebase code is commented out
-        // try {
-        //   await db.collection('locations').add({
-        //     latitude,
-        //     longitude,
-        //     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        //   });
-        // } catch (error) {
-        //   console.error(error);
-        //   Alert.alert('Error', 'Failed to track location');
-        // }
+        const trackLocationInFirestore = async (latitude, longitude) => {
+          try {
+            const timestamp = serverTimestamp();
+            const collectionRef = collection(db, 'locations');
+
+            // Update these fields as per your requirement
+            const userId = 'DvoLe0z9Q3Ir2l5gW8rh'; // Example user ID
+            const name = 'John Doe'; // Example user name
+
+            const docRef = await addDoc(collectionRef, {
+              latitude,
+              longitude,
+              timestamp,
+              userId, // Save user ID
+              name, // Save user name
+            });
+
+            console.log('Location Tracked:', docRef.id);
+            Alert.alert(
+              'Location Tracked',
+              `Latitude: ${latitude}, Longitude: ${longitude}, User: ${name}`,
+            );
+          } catch (error) {
+            console.error(error);
+            Alert.alert('Error', 'Failed to track location');
+          }
+        };
+
+        trackLocationInFirestore(latitude, longitude);
+        setIsTracking(false);
       },
       error => {
         console.error(error);

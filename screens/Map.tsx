@@ -8,6 +8,8 @@ import {
 } from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
+import {getFirestore, collection, getDocs} from 'firebase/firestore';
+import db from '../firebaseConfig';
 
 // San Antonio coordinates as a fallback
 const MANHATTEN_KS_COORDS = {latitude: 39.1836, longitude: 96.5717};
@@ -37,15 +39,24 @@ async function requestLocationPermission() {
   }
 }
 
+const fetchCoordinates = async () => {
+  const collectionRef = collection(db, 'locations');
+  const snapshot = await getDocs(collectionRef);
+  const coordinates = snapshot.docs.map(doc => doc.data());
+  console.log(coordinates);
+  return coordinates;
+};
+
+// const coordinates = fetchCoordinates();
+
 const MapScreen = () => {
-  const trashPickups = [
-    {id: 1, latitude: 29.495778, longitude: -98.4464974},
-    {id: 2, latitude: 29.495798, longitude: -98.4464984},
-    {id: 3, latitude: 29.495779, longitude: -98.4464944},
-    {id: 4, latitude: 29.495768, longitude: -98.4464992},
-    {id: 5, latitude: 29.495758, longitude: -98.4464932},
-    {id: 6, latitude: 29.4963686, longitude: -98.4466652},
-  ];
+  // const trashPickups = [
+  //   {id: 1, latitude: 29.495778, longitude: -98.4464974},
+  //   {id: 2, latitude: 29.495798, longitude: -98.4464984},
+  //   {id: 3, latitude: 29.495779, longitude: -98.4464944},
+  //   {id: 4, latitude: 29.495768, longitude: -98.4464992},
+  //   {id: 5, latitude: 29.495758, longitude: -98.4464932},
+  // ];
 
   const defaultRegion = {
     latitude: 0,
@@ -56,6 +67,7 @@ const MapScreen = () => {
 
   const [currentRegion, setCurrentRegion] = useState(defaultRegion);
   const [isLoading, setIsLoading] = useState(true);
+  const [locations, setLocations] = useState([]);
 
   useEffect(() => {
     const requestAndLoadLocation = async () => {
@@ -64,13 +76,16 @@ const MapScreen = () => {
         fetchCurrentLocation();
       } else {
         setIsLoading(false);
-        // Optionally set a fallback location (San Antonio) or handle the error
         setCurrentRegion({
           ...defaultRegion,
           latitude: MANHATTEN_KS_COORDS.latitude,
           longitude: MANHATTEN_KS_COORDS.longitude,
         });
       }
+
+      // Fetch coordinates from Firestore irrespective of permission status
+      const fetchedCoordinates = await fetchCoordinates();
+      setLocations(fetchedCoordinates);
     };
 
     requestAndLoadLocation();
@@ -106,16 +121,15 @@ const MapScreen = () => {
   return (
     <View style={styles.container}>
       <MapView style={styles.map} region={currentRegion}>
-        {trashPickups.map(pickup => (
+        {locations.map((location, index) => (
           <Marker
-            pinColor="blue"
-            key={pickup.id}
+            key={location.id || index} // Use Firestore document ID or index as a fallback
             coordinate={{
-              latitude: pickup.latitude,
-              longitude: pickup.longitude,
+              latitude: location.latitude,
+              longitude: location.longitude,
             }}
-            title={`Trash Pickup ${pickup.id}`}
-            description={`Location: ${pickup.latitude}, ${pickup.longitude}`}>
+            title={`Location ${location.id || index}`} // Adjust title as needed
+            description={`Latitude: ${location.latitude}, Longitude: ${location.longitude}`}>
             <View style={styles.customMarker} />
           </Marker>
         ))}
