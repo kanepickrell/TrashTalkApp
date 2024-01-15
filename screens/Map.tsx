@@ -32,8 +32,8 @@ const MapScreen = () => {
   ];
 
   const defaultRegion = {
-    latitude: 0,
-    longitude: 0,
+    latitude: 1,
+    longitude: 1,
     latitudeDelta: 0.05, // Adjusted for closer zoom to a neighborhood level
     longitudeDelta: 0.05, // Adjusted for closer zoom to a neighborhood level
   };
