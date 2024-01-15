@@ -7,6 +7,7 @@ import auth from '@react-native-firebase/auth';
 import {View, StyleSheet, Alert} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import Home from './Home';
+import {Button} from 'react-native';
 
 GoogleSignin.configure({
   webClientId:
@@ -41,6 +42,18 @@ const Login = () => {
     }
   };
 
+  const signOut = async () => {
+    try {
+      await GoogleSignin.revokeAccess();
+      await GoogleSignin.signOut();
+      await auth().signOut();
+      Alert.alert('Success', 'You are signed out!');
+    } catch (error) {
+      console.error('Sign-Out Error', error);
+      Alert.alert('Sign-Out Error', 'Failed to sign out.');
+    }
+  };
+
   return (
     <View style={styles.container}>
       <GoogleSigninButton
@@ -48,6 +61,7 @@ const Login = () => {
         size={GoogleSigninButton.Size.Wide}
         color={GoogleSigninButton.Color.Dark}
       />
+      <Button title="Sign Out" onPress={signOut} />
     </View>
   );
 };

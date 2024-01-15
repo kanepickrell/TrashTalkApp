@@ -2,12 +2,19 @@ import React from 'react';
 import {View, Text, Button, StyleSheet} from 'react-native';
 import {useNavigation} from '@react-navigation/native'; // Import useNavigation
 import {Image} from 'react-native';
+import auth from '@react-native-firebase/auth';
 
 const Home = () => {
   const navigation = useNavigation(); // Use the useNavigation hook
 
+  const currentUser = auth().currentUser?.displayName;
+
   return (
     <View style={styles.container}>
+      {/* Display the user's name */}
+      <Text style={styles.text}>Welcome {currentUser}!</Text>
+
+      {/* Logo */}
       <Image source={require('../assets/trashtalk.png')} style={styles.logo} />
 
       {/* Buttons at the bottom */}
@@ -44,6 +51,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 20,
     marginBottom: 20,
+    color: 'black',
   },
   buttonContainer: {
     position: 'absolute',
