@@ -3,13 +3,14 @@ import {View, StyleSheet, Dimensions, PermissionsAndroid} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
 
+// Function to get permission for location
 async function requestLocationPermission() {
   try {
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
       {
-        title: 'TrashTalk Location Permission',
-        message: 'TrashTalk needs access to your location',
+        title: 'Geolocation Permission',
+        message: 'Can we access your location?',
         buttonNeutral: 'Ask Me Later',
         buttonNegative: 'Cancel',
         buttonPositive: 'OK',
@@ -17,11 +18,14 @@ async function requestLocationPermission() {
     );
     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
       console.log('You can use the location');
+      return true;
     } else {
       console.log('Location permission denied');
+      return false;
     }
   } catch (err) {
     console.warn(err);
+    return false;
   }
 }
 
@@ -32,36 +36,58 @@ const MapScreen = () => {
   ];
 
   const defaultRegion = {
-    latitude: 1,
-    longitude: 1,
-    latitudeDelta: 0.05, // Adjusted for closer zoom to a neighborhood level
-    longitudeDelta: 0.05, // Adjusted for closer zoom to a neighborhood level
+    latitude: 0,
+    longitude: 0,
+    latitudeDelta: 0.05,
+    longitudeDelta: 0.05,
   };
 
   const [currentRegion, setCurrentRegion] = useState(defaultRegion);
-
   const [isLoading, setIsLoading] = useState(true);
+
+  const fetchCurrentLocation = () => {
+    Geolocation.getCurrentPosition(
+      position => {
+        console.log('Current Position:', position);
+        const {latitude, longitude} = position.coords;
+        setCurrentRegion({
+          ...currentRegion,
+          latitude,
+          longitude,
+        });
+      },
+      error => {
+        console.error(error);
+      },
+      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
+    );
+  };
 
   useEffect(() => {
     const requestAndLoadLocation = async () => {
-      await requestLocationPermission();
-      Geolocation.getCurrentPosition(
-        position => {
-          const {latitude, longitude} = position.coords;
-          setCurrentRegion({
-            ...currentRegion,
-            latitude,
-            longitude,
-          });
-          setIsLoading(false);
-        },
-        error => {
-          console.log(error);
-          setIsLoading(false);
-          // Optionally set a fallback location or handle the error
-        },
-        {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
-      );
+      const permissionGranted = await requestLocationPermission();
+      if (permissionGranted) {
+        Geolocation.getCurrentPosition(
+          position => {
+            const {latitude, longitude} = position.coords;
+            setCurrentRegion({
+              ...currentRegion,
+              latitude,
+              longitude,
+            });
+            setIsLoading(false);
+          },
+          error => {
+            console.log(error);
+            setIsLoading(false);
+            // Optionally set a fallback location or handle the error
+          },
+          {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
+        );
+      } else {
+        setIsLoading(false);
+        // Handle the case when permission is not granted
+      }
     };
 
     requestAndLoadLocation();
