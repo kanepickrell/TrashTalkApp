@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "792835698338",
+    "project_id": "trashtalkapp-d4f12",
+    "storage_bucket": "trashtalkapp-d4f12.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:792835698338:android:1d5d39135528c465e971fb",
+        "android_client_info": {
+          "package_name": "com.kanepickrel.trashtalkapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbvfCNMcPP5_AsB9ZFkO1_2eL8A2fKl2s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

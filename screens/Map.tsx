@@ -1,9 +1,17 @@
 import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, Dimensions, PermissionsAndroid} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  PermissionsAndroid,
+  Text,
+} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
 
-// Function to get permission for location
+// San Antonio coordinates as a fallback
+const SAN_ANTONIO_COORDS = {latitude: 29.4241, longitude: -98.4936};
+
 async function requestLocationPermission() {
   try {
     const granted = await PermissionsAndroid.request(
@@ -31,87 +39,87 @@ async function requestLocationPermission() {
 
 const MapScreen = () => {
   const trashPickups = [
-    {id: 1, latitude: 37.78825, longitude: -122.4324},
-    {id: 2, latitude: 37.78925, longitude: -122.4334},
+    {id: 1, latitude: 29.495778, longitude: -98.4464974},
+    {id: 2, latitude: 29.495798, longitude: -98.4464984},
+    {id: 3, latitude: 29.495779, longitude: -98.4464944},
+    {id: 4, latitude: 29.495768, longitude: -98.4464992},
+    {id: 5, latitude: 29.495758, longitude: -98.4464932},
   ];
 
   const defaultRegion = {
     latitude: 0,
     longitude: 0,
-    latitudeDelta: 0.05,
-    longitudeDelta: 0.05,
+    latitudeDelta: 0.0005,
+    longitudeDelta: 0.0005,
   };
 
   const [currentRegion, setCurrentRegion] = useState(defaultRegion);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchCurrentLocation = () => {
-    Geolocation.getCurrentPosition(
-      position => {
-        console.log('Current Position:', position);
-        const {latitude, longitude} = position.coords;
-        setCurrentRegion({
-          ...currentRegion,
-          latitude,
-          longitude,
-        });
-      },
-      error => {
-        console.error(error);
-      },
-      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
-    );
-  };
-
   useEffect(() => {
     const requestAndLoadLocation = async () => {
       const permissionGranted = await requestLocationPermission();
       if (permissionGranted) {
-        Geolocation.getCurrentPosition(
-          position => {
-            const {latitude, longitude} = position.coords;
-            setCurrentRegion({
-              ...currentRegion,
-              latitude,
-              longitude,
-            });
-            setIsLoading(false);
-          },
-          error => {
-            console.log(error);
-            setIsLoading(false);
-            // Optionally set a fallback location or handle the error
-          },
-          {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
-        );
+        fetchCurrentLocation();
       } else {
         setIsLoading(false);
-        // Handle the case when permission is not granted
+        // Optionally set a fallback location (San Antonio) or handle the error
+        setCurrentRegion({
+          ...defaultRegion,
+          latitude: SAN_ANTONIO_COORDS.latitude,
+          longitude: SAN_ANTONIO_COORDS.longitude,
+        });
       }
     };
 
     requestAndLoadLocation();
   }, []);
 
+  const fetchCurrentLocation = () => {
+    Geolocation.getCurrentPosition(
+      position => {
+        console.log('Current Position:', position);
+        const {latitude, longitude} = position.coords;
+
+        setCurrentRegion({
+          ...currentRegion,
+          latitude,
+          longitude,
+        });
+        setIsLoading(false);
+      },
+      error => {
+        console.error('Location Error:', error);
+        setIsLoading(false);
+        // Use San Antonio as fallback
+        setCurrentRegion({
+          ...defaultRegion,
+          latitude: SAN_ANTONIO_COORDS.latitude,
+          longitude: SAN_ANTONIO_COORDS.longitude,
+        });
+      },
+      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
+    );
+  };
+
   return (
     <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        initialRegion={
-          currentRegion.latitude !== 0 ? currentRegion : undefined
-        }>
+      <MapView style={styles.map} region={currentRegion}>
         {trashPickups.map(pickup => (
           <Marker
+            pinColor="blue"
             key={pickup.id}
             coordinate={{
               latitude: pickup.latitude,
               longitude: pickup.longitude,
             }}
             title={`Trash Pickup ${pickup.id}`}
-            description={`Location: ${pickup.latitude}, ${pickup.longitude}`}
-          />
+            description={`Location: ${pickup.latitude}, ${pickup.longitude}`}>
+            <View style={styles.customMarker} />
+          </Marker>
         ))}
       </MapView>
+      {isLoading ? <Text>Loading...</Text> : null}
     </View>
   );
 };
@@ -123,6 +131,12 @@ const styles = StyleSheet.create({
   map: {
     width: Dimensions.get('window').width,
     height: Dimensions.get('window').height,
+  },
+  customMarker: {
+    height: 10,
+    width: 10,
+    backgroundColor: 'green',
+    borderRadius: 5,
   },
 });
 
