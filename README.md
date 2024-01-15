@@ -1,14 +1,13 @@
-# Project Name
+# TrashTalk
 
 ## Description
-Brief description of what your project does and its target audience.
+Litter pickup tracking app that allows users to compete for most trash collected.
 
 ## Features
-List the key features of your app. For example:
 - User profile creation and management
 - Real-time data tracking
 - Interactive maps showing trash pickup locations
-- ...
+
 
 ## Installation
 Instructions on how to install your app. For example:
