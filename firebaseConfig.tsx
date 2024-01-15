@@ -1,6 +1,12 @@
 // Import the functions you need from the SDKs you need
 import {initializeApp, FirebaseApp} from 'firebase/app';
-import {getFirestore, Firestore} from 'firebase/firestore';
+// import {getFirestore, Firestore} from 'firebase/firestore';
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  serverTimestamp,
+} from 'firebase/firestore';
 
 // Define the structure of your Firebase configuration object
 interface FirebaseConfig {
@@ -26,6 +32,6 @@ const firebaseConfig: FirebaseConfig = {
 const app: FirebaseApp = initializeApp(firebaseConfig);
 
 // Get a reference to the Firestore service
-const db: Firestore = getFirestore(app);
+const db = getFirestore(app);
 
 export default db;
