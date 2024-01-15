@@ -11,11 +11,13 @@ import {StyleSheet, ViewStyle} from 'react-native';
 import Home from './screens/Home';
 import Map from './screens/Map';
 import Tracker from './screens/Tracker.tsx';
+import Login from './screens/Login.tsx';
 
 type RootStackParamList = {
   TrashTalk: undefined;
   Map: undefined;
   Tracker: undefined;
+  Login: undefined;
 };
 
 type AppNavigationProps = NativeStackNavigationProp<RootStackParamList>;
@@ -25,10 +27,11 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const App: React.FC = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="TrashTalk">
+      <Stack.Navigator initialRouteName="Login">
         <Stack.Screen name="TrashTalk" component={Home} />
         <Stack.Screen name="Map" component={Map} />
         <Stack.Screen name="Tracker" component={Tracker} />
+        <Stack.Screen name="Login" component={Login} />
       </Stack.Navigator>
       <StatusBar />
     </NavigationContainer>
@@ -36,7 +39,7 @@ const App: React.FC = () => {
 };
 
 // Define styles with TypeScript type
-const styles = StyleSheet.create<ViewStyle>({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',

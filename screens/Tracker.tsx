@@ -1,17 +1,21 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Text, StyleSheet, Button, Alert} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  serverTimestamp,
-} from 'firebase/firestore';
+import {getFirestore, collection, addDoc} from 'firebase/firestore';
 import db from '../firebaseConfig';
 
 const Tracker = () => {
   const [isTracking, setIsTracking] = useState(false);
   const [position, setPosition] = useState({latitude: null, longitude: null});
+  const [tempCoordinates, setTempCoordinates] = useState([]);
+
+  useEffect(() => {
+    return () => {
+      if (tempCoordinates.length > 0) {
+        uploadCoordinatesToFirestore();
+      }
+    };
+  }, [tempCoordinates]);
 
   const trackLocation = () => {
     setIsTracking(true);
@@ -19,36 +23,8 @@ const Tracker = () => {
       position => {
         const {latitude, longitude} = position.coords;
         setPosition({latitude, longitude});
-
-        const trackLocationInFirestore = async (latitude, longitude) => {
-          try {
-            const timestamp = serverTimestamp();
-            const collectionRef = collection(db, 'locations');
-
-            // Update these fields as per your requirement
-            const userId = 'DvoLe0z9Q3Ir2l5gW8rh'; // Example user ID
-            const name = 'John Doe'; // Example user name
-
-            const docRef = await addDoc(collectionRef, {
-              latitude,
-              longitude,
-              timestamp,
-              userId, // Save user ID
-              name, // Save user name
-            });
-
-            console.log('Location Tracked:', docRef.id);
-            Alert.alert(
-              'Location Tracked',
-              `Latitude: ${latitude}, Longitude: ${longitude}, User: ${name}`,
-            );
-          } catch (error) {
-            console.error(error);
-            Alert.alert('Error', 'Failed to track location');
-          }
-        };
-
-        trackLocationInFirestore(latitude, longitude);
+        const newCoord = {latitude, longitude, timestamp: new Date()};
+        setTempCoordinates(prevCoords => [...prevCoords, newCoord]);
         setIsTracking(false);
       },
       error => {
@@ -58,6 +34,22 @@ const Tracker = () => {
       },
       {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
     );
+  };
+
+  const uploadCoordinatesToFirestore = async () => {
+    const collectionRef = collection(db, 'locations');
+    try {
+      for (const coord of tempCoordinates) {
+        await addDoc(collectionRef, {
+          ...coord,
+          userId: 'DvoLe0z9Q3Ir2l5gW8rh', // Replace with actual user ID
+          name: 'John Doe', // Replace with actual name
+        });
+      }
+      console.log('All coordinates uploaded');
+    } catch (error) {
+      console.error('Error uploading coordinates:', error);
+    }
   };
 
   return (
