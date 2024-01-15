@@ -117,6 +117,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore'
     implementation 'com.google.firebase:firebase-storage'
     implementation 'com.google.firebase:firebase-database'
+    implementation 'com.firebaseui:firebase-ui-auth:7.2.0'
+    // implementation 'com.facebook.android:facebook-android-sdk:8.x'
+
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
