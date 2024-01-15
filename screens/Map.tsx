@@ -34,11 +34,13 @@ const MapScreen = () => {
   const defaultRegion = {
     latitude: 0,
     longitude: 0,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
+    latitudeDelta: 0.05, // Adjusted for closer zoom to a neighborhood level
+    longitudeDelta: 0.05, // Adjusted for closer zoom to a neighborhood level
   };
 
   const [currentRegion, setCurrentRegion] = useState(defaultRegion);
+
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const requestAndLoadLocation = async () => {
@@ -47,12 +49,17 @@ const MapScreen = () => {
         position => {
           const {latitude, longitude} = position.coords;
           setCurrentRegion({
-            ...defaultRegion,
+            ...currentRegion,
             latitude,
             longitude,
           });
+          setIsLoading(false);
         },
-        error => console.log(error),
+        error => {
+          console.log(error);
+          setIsLoading(false);
+          // Optionally set a fallback location or handle the error
+        },
         {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
       );
     };
