@@ -37,8 +37,8 @@ const Login = () => {
 
       //   Alert.alert('Success', 'You are signed in!');
     } catch (error) {
-      console.error('Google Sign-In Error:', error);
-      Alert.alert('Sign-In Error', 'Failed to sign in with Google.');
+      //   console.error('Google Sign-In Error:', error);
+      //   Alert.alert('Sign-In Error', 'Failed to sign in with Google.');
     }
   };
 

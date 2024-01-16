@@ -3,9 +3,21 @@ import {View, Text, Button, StyleSheet} from 'react-native';
 import {useNavigation} from '@react-navigation/native'; // Import useNavigation
 import {Image} from 'react-native';
 import auth from '@react-native-firebase/auth';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
 
 const Home = () => {
   const navigation = useNavigation(); // Use the useNavigation hook
+
+  const signOut = async () => {
+    try {
+      await GoogleSignin.revokeAccess();
+      await GoogleSignin.signOut();
+      await auth().signOut();
+      navigation.navigate('Login');
+    } catch (error) {
+      console.error('Sign-Out Error:', error);
+    }
+  };
 
   const currentUser = auth().currentUser?.displayName;
 
@@ -32,7 +44,7 @@ const Home = () => {
         <Button
           title="Logout"
           color={'#2e5248'}
-          onPress={() => navigation.navigate('Login')} // Make sure the Login screen is defined in your navigator
+          onPress={signOut} // Make sure the Login screen is defined in your navigator
         />
       </View>
     </View>
