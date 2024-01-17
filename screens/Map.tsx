@@ -47,8 +47,6 @@ const fetchCoordinates = async () => {
   return coordinates;
 };
 
-// const coordinates = fetchCoordinates();
-
 const MapScreen = () => {
   const defaultRegion = {
     latitude: 0,
