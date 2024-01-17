@@ -10,6 +10,7 @@ import MapView, {Marker} from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
 import {getFirestore, collection, getDocs} from 'firebase/firestore';
 import db from '../firebaseConfig';
+import {Polygon} from 'react-native-maps';
 
 // San Antonio coordinates as a fallback
 const MANHATTEN_KS_COORDS = {latitude: 39.1836, longitude: 96.5717};
@@ -43,8 +44,55 @@ const fetchCoordinates = async () => {
   const collectionRef = collection(db, 'locations');
   const snapshot = await getDocs(collectionRef);
   const coordinates = snapshot.docs.map(doc => doc.data());
-  console.log(coordinates);
+  // console.log(coordinates);
   return coordinates;
+};
+
+// declaring a region of interest via corner coordinates
+// const regionOfInterest = {
+//   topLeft: {
+//     latitude: 39.1836,
+//     longitude: 96.5717,
+//   },
+//   bottomRight: {
+//     latitude: 39.1836,
+//     longitude: 96.5717,
+//   },
+
+const renderGrid = (gridSize, region) => {
+  const gridElements = [];
+  const latStep = region.latitudeDelta / gridSize;
+  const lonStep = region.longitudeDelta / gridSize;
+
+  for (let lat = 0; lat < gridSize; lat++) {
+    for (let lon = 0; lon < gridSize; lon++) {
+      const topLeft = {
+        latitude: region.latitude + latStep * (lat + 1),
+        longitude: region.longitude - lonStep * (lon + 1),
+      };
+      const bottomRight = {
+        latitude: region.latitude + latStep * lat,
+        longitude: region.longitude - lonStep * lon,
+      };
+
+      gridElements.push(
+        <Polygon
+          key={`grid-${lat}-${lon}`}
+          coordinates={[
+            {latitude: topLeft.latitude, longitude: topLeft.longitude},
+            {latitude: topLeft.latitude, longitude: bottomRight.longitude},
+            {latitude: bottomRight.latitude, longitude: bottomRight.longitude},
+            {latitude: bottomRight.latitude, longitude: topLeft.longitude},
+          ]}
+          strokeColor="blue"
+          fillColor="rgba(0,0,0,0.2)"
+          strokeWidth={1}
+        />,
+      );
+    }
+  }
+
+  return gridElements;
 };
 
 // const coordinates = fetchCoordinates();
@@ -113,6 +161,7 @@ const MapScreen = () => {
   return (
     <View style={styles.container}>
       <MapView style={styles.map} region={currentRegion}>
+        {renderGrid(25, currentRegion)}
         {locations.map((location, index) => (
           <Marker
             key={location.id || index} // Use Firestore document ID or index as a fallback
