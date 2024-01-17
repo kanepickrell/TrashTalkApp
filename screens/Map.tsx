@@ -48,6 +48,17 @@ const fetchCoordinates = async () => {
   return coordinates;
 };
 
+// declaring a region of interest via corner coordinates
+// const regionOfInterest = {
+//   topLeft: {
+//     latitude: 39.1836,
+//     longitude: 96.5717,
+//   },
+//   bottomRight: {
+//     latitude: 39.1836,
+//     longitude: 96.5717,
+//   },
+
 const renderGrid = (gridSize, region) => {
   const gridElements = [];
   const latStep = region.latitudeDelta / gridSize;
