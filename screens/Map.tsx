@@ -5,10 +5,11 @@ import {
   Dimensions,
   PermissionsAndroid,
   Text,
+  Button,
 } from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
-import {getFirestore, collection, getDocs} from 'firebase/firestore';
+import {collection, getDocs} from 'firebase/firestore';
 import db from '../firebaseConfig';
 
 async function requestLocationPermission() {
@@ -36,11 +37,10 @@ async function requestLocationPermission() {
   }
 }
 
-const fetchCoordinates = async () => {
+const fetchCaptures = async () => {
   try {
     const collectionRef = collection(db, 'captures');
     const snapshot = await getDocs(collectionRef);
-    // Ensure data has the correct structure and map it accordingly
     return snapshot.docs
       .map(doc => {
         const data = doc.data();
@@ -57,9 +57,29 @@ const fetchCoordinates = async () => {
   }
 };
 
+const fetchFlags = async () => {
+  try {
+    const collectionRef = collection(db, 'flags');
+    const snapshot = await getDocs(collectionRef);
+    return snapshot.docs
+      .map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          latitude: data.Coordinates.latitude,
+          longitude: data.Coordinates.longitude,
+        };
+      })
+      .filter(coord => coord.latitude && coord.longitude);
+  } catch (error) {
+    console.error('Error fetching flags:', error);
+    return [];
+  }
+};
+
 const MapScreen = () => {
   const defaultRegion = {
-    latitude: 39.1836, // Manhatten, KS
+    latitude: 39.1836,
     longitude: 96.5717,
     latitudeDelta: 0.0005,
     longitudeDelta: 0.0005,
@@ -68,9 +88,38 @@ const MapScreen = () => {
   const [currentRegion, setCurrentRegion] = useState(defaultRegion);
   const [isLoading, setIsLoading] = useState(true);
   const [locations, setLocations] = useState([]);
+  const [flags, setFlags] = useState([]);
+  const [showFlags, setShowFlags] = useState(false);
+
+  // useEffect(() => {
+  //   const requestAndLoadLocation = async () => {
+  //     const permissionGranted = await requestLocationPermission();
+  //     if (permissionGranted) {
+  //       fetchCurrentLocation();
+  //     } else {
+  //       setIsLoading(false);
+  //     }
+
+  //     if (locations.length === 0) {
+  //       const fetchedCoordinates = await fetchCaptures();
+  //       setLocations(fetchedCoordinates);
+  //     }
+
+  //     if (showFlags && flags.length === 0) {
+  //       const fetchedFlags = await fetchFlags();
+  //       setFlags(fetchedFlags);
+  //     }
+
+  //     if (!showFlags && flags.length > 0) {
+  //       setFlags([]);
+  //     }
+  //   };
+
+  //   requestAndLoadLocation();
+  // }, [showFlags]);
 
   useEffect(() => {
-    const requestAndLoadLocation = async () => {
+    const fetchInitialData = async () => {
       const permissionGranted = await requestLocationPermission();
       if (permissionGranted) {
         fetchCurrentLocation();
@@ -78,33 +127,56 @@ const MapScreen = () => {
         setIsLoading(false);
       }
 
-      // Check if locations is already populated
-      if (locations.length === 0) {
-        const fetchedCoordinates = await fetchCoordinates();
-        setLocations(fetchedCoordinates);
+      const fetchedCoordinates = await fetchCaptures();
+      setLocations(fetchedCoordinates);
+    };
+
+    fetchInitialData();
+  }, []); // Empty dependency array for running only on mount
+
+  useEffect(() => {
+    const toggleFlagData = async () => {
+      if (showFlags && flags.length === 0) {
+        const fetchedFlags = await fetchFlags();
+        setFlags(fetchedFlags);
+      } else if (!showFlags) {
+        setFlags([]);
       }
     };
 
-    requestAndLoadLocation();
-  }, []); // Empty dependency array ensures this effect only runs once after the initial render
+    toggleFlagData();
+  }, [showFlags]); // Dependency on showFlags
+
+  const [locationSet, setLocationSet] = useState(false);
 
   const fetchCurrentLocation = () => {
     Geolocation.getCurrentPosition(
       position => {
         const {latitude, longitude} = position.coords;
-        setCurrentRegion({
-          ...currentRegion,
-          latitude,
-          longitude,
-        });
+        if (!locationSet) {
+          setCurrentRegion({
+            ...currentRegion,
+            latitude,
+            longitude,
+          });
+          setLocationSet(true); // Location is now set
+        }
         setIsLoading(false);
       },
       error => {
         console.error('Location Error:', error);
         setIsLoading(false);
+        if (!locationSet) {
+          setCurrentRegion(defaultRegion); // Fallback to default region
+          setLocationSet(true);
+        }
       },
       {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
     );
+  };
+
+  const toggleFlags = () => {
+    setShowFlags(!showFlags);
   };
 
   return (
@@ -122,8 +194,29 @@ const MapScreen = () => {
             <View style={styles.customMarker} />
           </Marker>
         ))}
+        {showFlags &&
+          flags.map((flag, index) => (
+            <Marker
+              key={flag.id || index}
+              coordinate={{
+                latitude: flag.latitude,
+                longitude: flag.longitude,
+                latitudeDelta: 0.0005,
+                longitudeDelta: 0.0005,
+              }}
+              title={`Flag ${flag.id || index}`}
+              description={`Latitude: ${flag.latitude}, Longitude: ${flag.longitude}`}>
+              <View style={styles.flagMarker} />
+            </Marker>
+          ))}
       </MapView>
-      {isLoading ? <Text>Loading...</Text> : null}
+      <View style={styles.buttonContainer}>
+        <Button
+          title={showFlags ? 'Hide Flags' : 'Show Flags'}
+          onPress={toggleFlags}
+        />
+      </View>
+      {isLoading ? <Text style={styles.loadingText}>Loading...</Text> : null}
     </View>
   );
 };
@@ -133,13 +226,28 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   map: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
+    flex: 1,
+  },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+  },
+  loadingText: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
   },
   customMarker: {
     height: 10,
     width: 10,
     backgroundColor: 'green',
+    borderRadius: 5,
+  },
+  flagMarker: {
+    height: 10,
+    width: 10,
+    backgroundColor: 'red',
     borderRadius: 5,
   },
 });
