@@ -78,12 +78,15 @@ const MapScreen = () => {
         setIsLoading(false);
       }
 
-      const fetchedCoordinates = await fetchCoordinates();
-      setLocations(fetchedCoordinates);
+      // Check if locations is already populated
+      if (locations.length === 0) {
+        const fetchedCoordinates = await fetchCoordinates();
+        setLocations(fetchedCoordinates);
+      }
     };
 
     requestAndLoadLocation();
-  }, []);
+  }, []); // Empty dependency array ensures this effect only runs once after the initial render
 
   const fetchCurrentLocation = () => {
     Geolocation.getCurrentPosition(
