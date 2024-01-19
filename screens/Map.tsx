@@ -11,9 +11,6 @@ import Geolocation from 'react-native-geolocation-service';
 import {getFirestore, collection, getDocs} from 'firebase/firestore';
 import db from '../firebaseConfig';
 
-// San Antonio coordinates as a fallback
-const MANHATTEN_KS_COORDS = {latitude: 39.1836, longitude: 96.5717};
-
 async function requestLocationPermission() {
   try {
     const granted = await PermissionsAndroid.request(
@@ -40,19 +37,30 @@ async function requestLocationPermission() {
 }
 
 const fetchCoordinates = async () => {
-  const collectionRef = collection(db, 'locations');
-  const snapshot = await getDocs(collectionRef);
-  const coordinates = snapshot.docs.map(doc => doc.data());
-  // console.log(coordinates);
-  return coordinates;
+  try {
+    const collectionRef = collection(db, 'captures');
+    const snapshot = await getDocs(collectionRef);
+    // Ensure data has the correct structure and map it accordingly
+    return snapshot.docs
+      .map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          latitude: data.Coordinates.latitude,
+          longitude: data.Coordinates.longitude,
+        };
+      })
+      .filter(coord => coord.latitude && coord.longitude);
+  } catch (error) {
+    console.error('Error fetching coordinates:', error);
+    return [];
+  }
 };
-
-// const coordinates = fetchCoordinates();
 
 const MapScreen = () => {
   const defaultRegion = {
-    latitude: 0,
-    longitude: 0,
+    latitude: 39.1836, // Manhatten, KS
+    longitude: 96.5717,
     latitudeDelta: 0.0005,
     longitudeDelta: 0.0005,
   };
@@ -68,14 +76,8 @@ const MapScreen = () => {
         fetchCurrentLocation();
       } else {
         setIsLoading(false);
-        setCurrentRegion({
-          ...defaultRegion,
-          latitude: MANHATTEN_KS_COORDS.latitude,
-          longitude: MANHATTEN_KS_COORDS.longitude,
-        });
       }
 
-      // Fetch coordinates from Firestore irrespective of permission status
       const fetchedCoordinates = await fetchCoordinates();
       setLocations(fetchedCoordinates);
     };
@@ -86,9 +88,7 @@ const MapScreen = () => {
   const fetchCurrentLocation = () => {
     Geolocation.getCurrentPosition(
       position => {
-        console.log('Current Position:', position);
         const {latitude, longitude} = position.coords;
-
         setCurrentRegion({
           ...currentRegion,
           latitude,
@@ -99,12 +99,6 @@ const MapScreen = () => {
       error => {
         console.error('Location Error:', error);
         setIsLoading(false);
-        // Use San Antonio as fallback
-        setCurrentRegion({
-          ...defaultRegion,
-          latitude: MANHATTEN_KS_COORDS.latitude,
-          longitude: MANHATTEN_KS_COORDS.longitude,
-        });
       },
       {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
     );
@@ -115,12 +109,12 @@ const MapScreen = () => {
       <MapView style={styles.map} region={currentRegion}>
         {locations.map((location, index) => (
           <Marker
-            key={location.id || index} // Use Firestore document ID or index as a fallback
+            key={location.id || index}
             coordinate={{
               latitude: location.latitude,
               longitude: location.longitude,
             }}
-            title={`Location ${location.id || index}`} // Adjust title as needed
+            title={`Location ${location.id || index}`}
             description={`Latitude: ${location.latitude}, Longitude: ${location.longitude}`}>
             <View style={styles.customMarker} />
           </Marker>
