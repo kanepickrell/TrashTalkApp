@@ -11,6 +11,10 @@ import MapView, {Marker} from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
 import {collection, getDocs} from 'firebase/firestore';
 import db from '../firebaseConfig';
+import {Heatmap, PROVIDER_GOOGLE} from 'react-native-maps';
+
+/////////////////////////////
+/////////////////////////////
 
 async function requestLocationPermission() {
   try {
@@ -77,6 +81,8 @@ const fetchFlags = async () => {
   }
 };
 
+/////////////////////////////
+/////////////////////////////
 const MapScreen = () => {
   const defaultRegion = {
     latitude: 39.1836,
@@ -90,38 +96,12 @@ const MapScreen = () => {
   const [locations, setLocations] = useState([]);
   const [flags, setFlags] = useState([]);
   const [showFlags, setShowFlags] = useState(false);
-
-  // useEffect(() => {
-  //   const requestAndLoadLocation = async () => {
-  //     const permissionGranted = await requestLocationPermission();
-  //     if (permissionGranted) {
-  //       fetchCurrentLocation();
-  //     } else {
-  //       setIsLoading(false);
-  //     }
-
-  //     if (locations.length === 0) {
-  //       const fetchedCoordinates = await fetchCaptures();
-  //       setLocations(fetchedCoordinates);
-  //     }
-
-  //     if (showFlags && flags.length === 0) {
-  //       const fetchedFlags = await fetchFlags();
-  //       setFlags(fetchedFlags);
-  //     }
-
-  //     if (!showFlags && flags.length > 0) {
-  //       setFlags([]);
-  //     }
-  //   };
-
-  //   requestAndLoadLocation();
-  // }, [showFlags]);
+  const [locationSet, setLocationSet] = useState(false);
 
   useEffect(() => {
     const fetchInitialData = async () => {
       const permissionGranted = await requestLocationPermission();
-      if (permissionGranted) {
+      if (permissionGranted && !locationSet) {
         fetchCurrentLocation();
       } else {
         setIsLoading(false);
@@ -147,8 +127,6 @@ const MapScreen = () => {
     toggleFlagData();
   }, [showFlags]); // Dependency on showFlags
 
-  const [locationSet, setLocationSet] = useState(false);
-
   const fetchCurrentLocation = () => {
     Geolocation.getCurrentPosition(
       position => {
@@ -161,11 +139,9 @@ const MapScreen = () => {
           });
           setLocationSet(true); // Location is now set
         }
-        setIsLoading(false);
       },
       error => {
         console.error('Location Error:', error);
-        setIsLoading(false);
         if (!locationSet) {
           setCurrentRegion(defaultRegion); // Fallback to default region
           setLocationSet(true);
@@ -179,9 +155,19 @@ const MapScreen = () => {
     setShowFlags(!showFlags);
   };
 
+  const handleRegionChangeComplete = (region, details) => {
+    if (details && details.isGesture) {
+      // Update the region only when the change is due to a user gesture
+      setCurrentRegion(region);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <MapView style={styles.map} region={currentRegion}>
+      <MapView
+        style={styles.map}
+        region={currentRegion}
+        onRegionChangeComplete={handleRegionChangeComplete}>
         {locations.map((location, index) => (
           <Marker
             key={location.id || index}
