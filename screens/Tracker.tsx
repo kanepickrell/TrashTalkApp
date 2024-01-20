@@ -10,11 +10,12 @@ const Tracker = () => {
   const [isTracking, setIsTracking] = useState(false);
   const [position, setPosition] = useState({latitude: null, longitude: null});
   const [tempCoordinates, setTempCoordinates] = useState([]);
+  const [TotalTrashPickedUp, setTotalTrashPickedUp] = useState(0);
 
   useEffect(() => {
     return () => {
       if (tempCoordinates.length > 0) {
-        uploadCoordinatesToFirestore();
+        uploadToFirestore();
       }
     };
   }, [tempCoordinates]);
@@ -36,9 +37,10 @@ const Tracker = () => {
       },
       {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
     );
+    setTotalTrashPickedUp(prevTotal => prevTotal + 1);
   };
 
-  const uploadCoordinatesToFirestore = async () => {
+  const uploadToFirestore = async () => {
     const collectionRef = collection(db, 'captures');
     const currentUser = auth().currentUser;
     if (!currentUser) {
@@ -67,9 +69,11 @@ const Tracker = () => {
     }
   };
 
+  //upload total trash picked up to firestore when exiting the screen
+
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Tracker</Text>
+      <Text style={styles.textdisplay}>Total: {TotalTrashPickedUp} </Text>
       <Button
         title={isTracking ? 'Tracking...' : 'Track'}
         onPress={trackLocation}
@@ -97,6 +101,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: 'black',
+  },
+  textdisplay: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: 'black',
   },
 });
 
