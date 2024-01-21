@@ -20,11 +20,11 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {useNavigation} from '@react-navigation/native';
 
-const Tracker = () => {
+const Flagger = () => {
   const [isTracking, setIsTracking] = useState(false);
   const [position, setPosition] = useState({latitude: null, longitude: null});
   const [tempCoordinates, setTempCoordinates] = useState([]);
-  const [TotalTrashPickedUp, setTotalTrashPickedUp] = useState(0);
+  const [TotalFlagsPlaced, setTotalFlagsPlaced] = useState(0); // Updated state variable name
   const currentUser = auth().currentUser?.displayName;
   const navigation = useNavigation();
 
@@ -51,8 +51,8 @@ const Tracker = () => {
     );
   };
 
-  const addCoordToCaptures = async () => {
-    const collectionRef = collection(db, 'captures');
+  const addCoordToFlags = async () => {
+    const collectionRef = collection(db, 'flags');
     const currentUser = auth().currentUser;
     if (!currentUser) {
       console.error('No user is signed in');
@@ -74,13 +74,13 @@ const Tracker = () => {
           userId,
         });
       }
-      console.log('All capture coordinates uploaded');
+      console.log('All flag coordinates uploaded');
     } catch (error) {
       console.error('Error uploading coordinates:', error);
     }
   };
 
-  const add2TotalTrashPickedUp = async () => {
+  const add2TotalFlagsPlaced = async () => {
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('Username', '==', currentUser));
 
@@ -92,17 +92,17 @@ const Tracker = () => {
         const userDocRef = userDoc.ref;
 
         await updateDoc(userDocRef, {
-          TotalTrashPickedUp: increment(tempCoordinates.length),
+          TotalFlagsPlaced: increment(tempCoordinates.length),
         });
       } else {
         console.log('User not found');
       }
     } catch (error) {
-      console.error('Error updating user total trash picked up:', error);
+      console.error('Error updating user total flags placed:', error);
     }
   };
 
-  const fetchTotalTrashPickedUp = async () => {
+  const fetchTotalFlagsPlaced = async () => {
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('Username', '==', currentUser));
 
@@ -112,77 +112,73 @@ const Tracker = () => {
       if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
         const userDocData = userDoc.data();
+        const totalFlagsPlaced = userDocData.TotalFlagsPlaced;
 
-        setTotalTrashPickedUp(userDocData.TotalTrashPickedUp);
-
-        console.log(
-          'User total trash picked up:',
-          userDocData.TotalTrashPickedUp,
-        );
+        setTotalFlagsPlaced(totalFlagsPlaced);
       } else {
         console.log('Creating new user document');
         const newUserRef = doc(collection(db, 'users'));
         await setDoc(newUserRef, {
           Username: currentUser,
-          TotalTrashPickedUp: 0,
+          TotalFlagsPlaced: 0,
           userId: auth().currentUser?.uid,
         });
-        setTotalTrashPickedUp(0);
+        setTotalFlagsPlaced(0);
       }
     } catch (error) {
-      console.error('Error fetching user total trash picked up:', error);
+      console.error('Error fetching user total flags placed:', error);
     }
   };
 
   useEffect(() => {
-    fetchTotalTrashPickedUp();
+    fetchTotalFlagsPlaced();
   }, []);
 
   useEffect(() => {
     const updateFirestore = async () => {
       if (tempCoordinates.length > 0) {
-        await addCoordToCaptures();
-        await add2TotalTrashPickedUp();
-        await fetchTotalTrashPickedUp();
+        await addCoordToFlags();
+        await add2TotalFlagsPlaced();
+        await fetchTotalFlagsPlaced();
         setTempCoordinates([]);
       }
     };
 
     updateFirestore();
-
-    return () => {
-      // Cleanup if necessary
-    };
   }, [tempCoordinates]);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.textdisplay}>
-        Today's Total: {TotalTrashPickedUp}{' '}
-      </Text>
+      <Text style={styles.textdisplay}>Today's Total: {TotalFlagsPlaced} </Text>
       <Button
-        title={isTracking ? 'Tracking...' : 'Track'}
+        title={isTracking ? 'Placing...' : 'Place'}
         onPress={trackLocation}
         disabled={isTracking}
-        color="green"
+        color="red"
       />
       <Button
-        title="Flagger"
-        color={'#2e5248'}
-        onPress={() => navigation.navigate('Flagger')} // Make sure the Tracker screen is defined in your navigator
+        title="Tracker"
         color="blue"
+        onPress={() => navigation.navigate('Tracker')}
       />
+      {position.latitude && position.longitude && (
+        <Text>
+          Current Position: {'\n'}
+          Latitude: {position.latitude} {'\n'}
+          Longitude: {position.longitude}
+        </Text>
+      )}
     </View>
-  );
+  ); // Added closing parenthesis
 };
 
 const styles = StyleSheet.create({
+  // Corrected syntax
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
-    marginBottom: 20,
   },
   textdisplay: {
     fontSize: 20,
@@ -190,15 +186,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: 'black',
   },
-  flaggerButton: {
-    // Your existing styles...
-    marginBottom: 20, // Add space at the bottom of the Flagger button
-  },
+}); // Added closing parenthesis
 
-  trackButton: {
-    // Your existing styles...
-    marginTop: 20, // Add space at the top of the Track button
-  },
-});
-
-export default Tracker;
+export default Flagger;
