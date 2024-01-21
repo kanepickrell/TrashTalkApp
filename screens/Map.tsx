@@ -29,10 +29,10 @@ async function requestLocationPermission() {
       },
     );
     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      console.log('You can use the location');
+      console.log('Geolocation Permission Granted');
       return true;
     } else {
-      console.log('Location permission denied');
+      console.log('Location Permission Denied');
       return false;
     }
   } catch (err) {

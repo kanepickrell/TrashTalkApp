@@ -4,9 +4,16 @@ import {useNavigation} from '@react-navigation/native'; // Import useNavigation
 import {Image} from 'react-native';
 import auth from '@react-native-firebase/auth';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import {useEffect} from 'react';
 
 const Home = () => {
   const navigation = useNavigation(); // Use the useNavigation hook
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerBackVisible: false,
+    });
+  }, [navigation]);
 
   const signOut = async () => {
     try {
@@ -39,7 +46,12 @@ const Home = () => {
         <Button
           title="Tracker"
           color={'#2e5248'}
-          onPress={() => navigation.navigate('Tracker')} // Make sure the Tracker screen is defined in your navigator
+          onPress={() => navigation.navigate('Tracker')}
+        />
+        <Button
+          title="Leaders"
+          color={'#2e5248'}
+          onPress={() => navigation.navigate('Tracker')}
         />
         <Button
           title="Logout"
