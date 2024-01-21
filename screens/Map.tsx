@@ -1,12 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  PermissionsAndroid,
-  Text,
-  Button,
-} from 'react-native';
+import {View, StyleSheet, PermissionsAndroid, Text, Button} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
 import {collection, getDocs} from 'firebase/firestore';

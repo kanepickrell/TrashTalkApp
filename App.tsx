@@ -13,6 +13,7 @@ import Map from './screens/Map';
 import Tracker from './screens/Tracker.tsx';
 import Login from './screens/Login.tsx';
 import Flagger from './screens/Flagger.tsx';
+import Leaderboard from './screens/Leaderboard.tsx';
 
 type RootStackParamList = {
   Basecamp: undefined;
@@ -20,6 +21,7 @@ type RootStackParamList = {
   Tracker: undefined;
   Login: undefined;
   Flagger: undefined;
+  Leaderboard: undefined;
 };
 
 type AppNavigationProps = NativeStackNavigationProp<RootStackParamList>;
@@ -35,6 +37,7 @@ const App: React.FC = () => {
         <Stack.Screen name="Tracker" component={Tracker} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Flagger" component={Flagger} />
+        <Stack.Screen name="Leaderboard" component={Leaderboard} />
       </Stack.Navigator>
       <StatusBar />
     </NavigationContainer>

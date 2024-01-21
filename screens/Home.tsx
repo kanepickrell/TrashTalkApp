@@ -51,7 +51,7 @@ const Home = () => {
         <Button
           title="Leaders"
           color={'#2e5248'}
-          onPress={() => navigation.navigate('Tracker')}
+          onPress={() => navigation.navigate('Leaderboard')}
         />
         <Button
           title="Logout"
