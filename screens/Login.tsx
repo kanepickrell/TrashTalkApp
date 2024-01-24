@@ -4,22 +4,14 @@ import {
   GoogleSigninButton,
 } from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
-import {View, StyleSheet, Alert} from 'react-native';
+import {View, StyleSheet, Alert, Text, TextInput} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import Home from './Home';
 import {Button} from 'react-native';
 
 GoogleSignin.configure({
   webClientId:
     '792835698338-ab3s5kdrouauqq31afdo5thp2p9hsnc2.apps.googleusercontent.com',
 });
-
-type RootStackParamList = {
-  TrashTalk: undefined;
-  Map: undefined;
-  Tracker: undefined;
-  Login: undefined;
-};
 
 const Login = () => {
   const navigation = useNavigation();
@@ -56,12 +48,37 @@ const Login = () => {
 
   return (
     <View style={styles.container}>
+      <OutlinedText
+        text="Ready To Talk Trash?"
+        style={styles.welcome}
+        outlineStyle={styles.welcomeOutline}
+      />
+      <Text style={styles.instructions}>Login</Text>
+      <TextInput style={styles.input} placeholder="Email"></TextInput>
+      <TextInput style={styles.input} placeholder="Password"></TextInput>
+      <Button
+        title="Login"
+        onPress={() => navigation.navigate('Basecamp')}
+        color={'#2e5248'}></Button>
       <GoogleSigninButton
         onPress={googleSignIn}
         size={GoogleSigninButton.Size.Wide}
         color={GoogleSigninButton.Color.Dark}
+        style={{marginTop: 10}}
       />
-      <Button title="Sign Out" onPress={signOut} />
+      {/* <Button title="Sign Out" onPress={signOut} /> */}
+    </View>
+  );
+};
+
+const OutlinedText = ({text, style, outlineStyle}) => {
+  return (
+    <View style={{position: 'relative'}}>
+      {/* Outline Text */}
+      <Text style={[style, outlineStyle, {position: 'absolute'}]}>{text}</Text>
+
+      {/* Main Text */}
+      <Text style={style}>{text}</Text>
     </View>
   );
 };
@@ -69,11 +86,45 @@ const Login = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#2D6E5D',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // No need for custom styles for the Google Signin Button as it uses its own styles
+  welcome: {
+    fontSize: 40,
+    textAlign: 'center',
+    color: '#FFFFFF',
+    fontFamily: 'RobotoCondensed-Bold',
+    marginBottom: 40,
+  },
+  welcomeOutline: {
+    color: 'transparent',
+    textShadowColor: '#1F4F40', // Outline color
+    textShadowOffset: {width: -1, height: 1},
+    textShadowRadius: 1,
+  },
+  instructions: {
+    textAlign: 'center',
+    color: '#FFFFFF',
+    fontSize: 15,
+    letterSpacing: 2,
+    fontFamily: 'RobotoCondensed-Light',
+    marginBottom: 10,
+  },
+  input: {
+    height: 40,
+    width: 200,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
+    borderColor: '#FFFFFF',
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  button: {
+    marginTop: 10,
+    borderRadius: 40,
+  },
 });
 
 export default Login;
