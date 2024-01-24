@@ -66,7 +66,7 @@ const Login = () => {
         color={GoogleSigninButton.Color.Dark}
         style={{marginTop: 10}}
       />
-      {/* <Button title="Sign Out" onPress={signOut} /> */}
+      <Button title="Sign Up" color={'#2e5248'}></Button>
     </View>
   );
 };
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 40,
-    width: 200,
+    width: 300,
     margin: 12,
     borderWidth: 1,
     padding: 10,
