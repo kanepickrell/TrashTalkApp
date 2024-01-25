@@ -14,6 +14,7 @@ import Tracker from './screens/Tracker.tsx';
 import Login from './screens/Login.tsx';
 import Flagger from './screens/Flagger.tsx';
 import Leaderboard from './screens/Leaderboard.tsx';
+import MyLayout from './screens/MyLayout.tsx';
 
 type RootStackParamList = {
   Basecamp: undefined;
@@ -22,6 +23,7 @@ type RootStackParamList = {
   Login: undefined;
   Flagger: undefined;
   Leaderboard: undefined;
+  MyLayout: undefined;
 };
 
 type AppNavigationProps = NativeStackNavigationProp<RootStackParamList>;
