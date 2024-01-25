@@ -1,9 +1,9 @@
 import React from 'react';
-import {View, Text, Button, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, Text, Button, StyleSheet, Dimensions} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
-import FlipCard from 'react-native-flip-card'; // Make sure to install this package
+import Svg, {Path} from 'react-native-svg';
 
 const Home = () => {
   const navigation = useNavigation();
@@ -21,49 +21,48 @@ const Home = () => {
 
   const currentUser = auth().currentUser?.displayName;
 
-  // Grid data (replace with your own data)
-  const gridData = [
-    {id: 1, description: 'Tile 1'},
-    {id: 2, description: 'Tile 2'},
-    {id: 3, description: 'Tile 3'},
-    {id: 4, description: 'Tile 4'},
-    {id: 5, description: 'Tile 5'},
-    {id: 6, description: 'Tile 6'},
-    {id: 7, description: 'Tile 7'},
-    {id: 8, description: 'Tile 8'},
-    {id: 9, description: 'Tile 9'},
-  ];
+  const {width} = Dimensions.get('window');
+  const cardSize = width / 3.5 - 10;
 
-  // Render a single grid tile
-  const renderGridTile = tile => (
-    <FlipCard
-      key={tile.id}
-      style={styles.flipCard}
-      flipHorizontal={true}
-      flipVertical={false}>
-      {/* Front of the card */}
-      <View style={styles.frontCard}>
-        <Text>{tile.id}</Text>
-      </View>
-      {/* Back of the card */}
-      <View style={styles.backCard}>
-        <Text>{tile.description}</Text>
-      </View>
-    </FlipCard>
-  );
+  const cards = [
+    {front: 'INSPIRE', color: '#FFA500', completed: true},
+    {front: 'INSIGHT', color: '#008080', completed: false},
+    {front: 'PROTECT', color: '#228B22', completed: true},
+    {front: 'DILLIGENCE', color: '#008080', completed: false},
+    {front: 'STREAK', color: '#228B22', completed: false},
+    {front: 'SPEEDSTER', color: '#87CEEB', completed: false},
+    {front: 'RECRUIT', color: '#FFA500', completed: false},
+    {front: 'MILESTONE', color: '#87CEEB', completed: true},
+    {front: 'CURIOUSITY', color: '#008080', completed: false},
+  ];
 
   return (
     <View style={styles.container}>
-      {/* Top Section */}
       <View style={styles.topSection}>
-        <Text style={styles.welcome}>Welcome back, {currentUser}!</Text>
+        <Text style={styles.welcome}>
+          Welcome back, {'\n'}
+          {currentUser}!
+        </Text>
         <Button title="Logout" color={'#2e5248'} onPress={signOut} />
       </View>
 
-      {/* Middle Section - Grid */}
-      <View style={styles.gridContainer}>{gridData.map(renderGridTile)}</View>
+      <View style={styles.statusTextContainer}>
+        <Text style={styles.status}>STATUS: Eco-Friendly</Text>
+      </View>
 
-      {/* Bottom Section - Buttons */}
+      <View style={styles.gridContainer}>
+        {cards.map((card, index) => (
+          <View
+            key={index}
+            style={[
+              styles.tile,
+              {backgroundColor: card.color, opacity: card.completed ? 1 : 0.25},
+            ]}>
+            <Text style={styles.tileText}>{card.front}</Text>
+          </View>
+        ))}
+      </View>
+
       <View style={styles.buttonContainer}>
         <Button
           title="Map"
@@ -90,50 +89,93 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    padding: 20,
+    // padding: 20,
     backgroundColor: '#2D6E5D',
-  },
-  welcome: {
-    fontSize: 20,
-    color: '#FFFFFF',
-    fontFamily: 'RobotoCondensed-Bold',
   },
   topSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start', // Align items to the top
     width: '100%',
     marginBottom: 20,
+    paddingTop: 20, // Adjust padding as needed
+    paddingHorizontal: 20, // Add horizontal padding
   },
+  welcome: {
+    fontSize: 25,
+    color: '#FFFFFF',
+    fontFamily: 'RobotoCondensed-Bold',
+    paddingRight: 10,
+    marginLeft: 10,
+    paddingBottom: 30,
+  },
+  statusTextContainer: {
+    alignSelf: 'flex-start',
+    paddingLeft: 10,
+    paddingTop: 10,
+    paddingBottom: 10,
+    backgroundColor: '#4CAF50',
+    borderRadius: 5,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    marginLeft: 30,
+  },
+  status: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    fontFamily: 'RobotoCondensed-Bold',
+    textAlign: 'center',
+    paddingRight: 10,
+  },
+
   gridContainer: {
+    paddingTop: 20,
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-around', // Distribute items evenly along the row
+    justifyContent: 'center',
+    alignItems: 'center',
     width: '100%',
   },
-  flipCard: {
-    width: '33%',
-    height: 100, // Adjust as needed
-    margin: '1.5%',
-  },
-  frontCard: {
-    backgroundColor: '#FFFFFF',
+  tile: {
+    // width: cardSize,
+    // height: cardSize,
+    width: 112,
+    height: 112,
+    margin: 5,
     justifyContent: 'center',
     alignItems: 'center',
-    color: 'red',
+    borderRadius: 10,
   },
-  backCard: {
-    backgroundColor: 'gray',
-    justifyContent: 'center',
+  tileText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
+    borderRadius: 10,
     alignItems: 'center',
-    color: 'red',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+    textAlign: 'center',
+    textAlignVertical: 'center',
   },
+
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    width: '100%',
-    marginBottom: 20,
+    alignItems: 'center', // Align items vertically in the center
+    width: '100%', // Use 100% width for full width
+    paddingTop: 20,
+    paddingBottom: 20, // Add padding at the bottom
+    backgroundColor: '#1F4F40',
+    borderTopWidth: 1,
+    borderTopColor: '#FFFFFF',
   },
 });
 

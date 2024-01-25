@@ -53,20 +53,29 @@ const Login = () => {
         style={styles.welcome}
         outlineStyle={styles.welcomeOutline}
       />
-      <Text style={styles.instructions}>Login</Text>
+      <Text style={styles.instructions}>LOGIN</Text>
       <TextInput style={styles.input} placeholder="Email"></TextInput>
       <TextInput style={styles.input} placeholder="Password"></TextInput>
-      <Button
-        title="Login"
-        onPress={() => navigation.navigate('Basecamp')}
-        color={'#2e5248'}></Button>
+
+      <View style={styles.buttonContainer}>
+        <Button
+          title="Login"
+          // onPress={() => navigation.navigate('Basecamp')}
+          color={'#2e5248'}></Button>
+      </View>
+
+      <Text style={styles.instructions}>OR</Text>
+
+      <View style={styles.buttonContainer}>
+        <Button title="Sign Up" color={'#2e5248'} />
+      </View>
+
       <GoogleSigninButton
         onPress={googleSignIn}
         size={GoogleSigninButton.Size.Wide}
         color={GoogleSigninButton.Color.Dark}
         style={{marginTop: 10}}
       />
-      <Button title="Sign Up" color={'#2e5248'}></Button>
     </View>
   );
 };
@@ -109,7 +118,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     letterSpacing: 2,
     fontFamily: 'RobotoCondensed-Light',
-    marginBottom: 10,
   },
   input: {
     height: 40,
@@ -121,9 +129,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 10,
   },
-  button: {
-    marginTop: 10,
-    borderRadius: 40,
+  buttonContainer: {
+    margin: 10,
+    overflow: 'hidden',
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
   },
 });
 
