@@ -17,7 +17,7 @@ import Leaderboard from './screens/Leaderboard.tsx';
 import MyLayout from './screens/MyLayout.tsx';
 
 type RootStackParamList = {
-  Basecamp: undefined;
+  Home: undefined;
   Map: undefined;
   Tracker: undefined;
   Login: undefined;
@@ -35,7 +35,7 @@ const App: React.FC = () => {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
         <Stack.Screen
-          name="Basecamp"
+          name="Home"
           component={Home}
           options={{headerShown: false}}
         />

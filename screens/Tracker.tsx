@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Button, Alert} from 'react-native';
+import {View, Text, StyleSheet, Button, Alert, Dimensions} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import {
   getFirestore,
@@ -27,6 +27,7 @@ const Tracker = () => {
   const [TotalTrashPickedUp, setTotalTrashPickedUp] = useState(0);
   const currentUser = auth().currentUser?.displayName;
   const navigation = useNavigation();
+  const [progress, setProgress] = useState(0.5); // 50% progress
 
   const trackLocation = () => {
     if (isTracking) {
@@ -156,33 +157,72 @@ const Tracker = () => {
   }, [tempCoordinates]);
 
   return (
+    // <View style={styles.container}>
+    //   <Text style={styles.textdisplay}>
+    //     Today's Total: {TotalTrashPickedUp}{' '}
+    //   </Text>
+    //   <Button
+    //     title={isTracking ? 'Tracking...' : 'Track'}
+    //     onPress={trackLocation}
+    //     disabled={isTracking}
+    //     color="green"
+    //   />
+    //   <Button
+    //     title="Flagger"
+    //     onPress={() => navigation.navigate('Flagger')} // Make sure the Tracker screen is defined in your navigator
+    //     color="blue"
+    //   />
+    // </View>
+
     <View style={styles.container}>
-      <Text style={styles.textdisplay}>
-        Today's Total: {TotalTrashPickedUp}{' '}
-      </Text>
-      <Button
-        title={isTracking ? 'Tracking...' : 'Track'}
-        onPress={trackLocation}
-        disabled={isTracking}
-        color="green"
-      />
-      <Button
-        title="Flagger"
-        onPress={() => navigation.navigate('Flagger')} // Make sure the Tracker screen is defined in your navigator
-        color="blue"
-      />
+      <View style={styles.topSection}></View>
+
+      <View style={styles.performanceContainer}>
+        <Text style={styles.status}>Captures</Text>
+        <View style={styles.progressBarBackground}>
+          <View
+            style={[
+              styles.progressBarForeground,
+              {width: `${progress * 100}%`},
+            ]}
+          />
+        </View>
+      </View>
+
+      <View style={styles.toolContainer}></View>
+
+      <View style={styles.buttonContainer}>
+        <Button
+          title="Map"
+          color={'#2e5248'}
+          onPress={() => navigation.navigate('Map')}
+        />
+        <Button
+          title="Home"
+          color={'#2e5248'}
+          onPress={() => navigation.navigate('Home')}
+        />
+        <Button
+          title="Leaders"
+          color={'#2e5248'}
+          onPress={() => navigation.navigate('Leaderboard')}
+        />
+      </View>
     </View>
   );
 };
 
+const windowHeight = Dimensions.get('window').height;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
+    // padding: 20,
     backgroundColor: '#2D6E5D',
-    marginBottom: 20,
   },
+
   textdisplay: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -197,6 +237,72 @@ const styles = StyleSheet.create({
   trackButton: {
     // Your existing styles...
     marginTop: 20, // Add space at the top of the Track button
+  },
+  topSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 20,
+    paddingTop: 20,
+    paddingHorizontal: 20,
+  },
+  welcome: {
+    fontSize: 25,
+    color: '#FFFFFF',
+    fontFamily: 'RobotoCondensed-Bold',
+    paddingRight: 10,
+    marginLeft: 10,
+    paddingBottom: 30,
+  },
+  performanceContainer: {
+    height: windowHeight / 2, // Half of the screen height
+    alignSelf: 'stretch',
+    padding: 20,
+    backgroundColor: '#1F4F40',
+    borderRadius: 8,
+    marginHorizontal: 30,
+    justifyContent: 'center', // Center content vertically
+    alignItems: 'center', // Center content horizontally
+  },
+
+  progressBarBackground: {
+    backgroundColor: '#ddd',
+    width: '100%',
+    height: 20,
+    borderRadius: 10,
+    marginTop: 15,
+  },
+
+  progressBarForeground: {
+    backgroundColor: '#76AD3B',
+    height: '100%',
+    borderRadius: 10,
+  },
+
+  toolContainer: {
+    flex: 1, // Take up all remaining space
+    width: '100%',
+    // ... (any additional styling)
+  },
+
+  status: {
+    fontSize: 18, // Increase font size for better readability
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center', // Align items vertically in the center
+    width: '100%', // Use 100% width for full width
+    paddingTop: 20,
+    paddingBottom: 20, // Add padding at the bottom
+    backgroundColor: '#1F4F40',
+    borderTopWidth: 1,
+    borderTopColor: '#FFFFFF',
   },
 });
 
