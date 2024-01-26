@@ -7,6 +7,7 @@ import auth from '@react-native-firebase/auth';
 import {View, StyleSheet, Alert, Text, TextInput} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {Button} from 'react-native';
+import {ToggleSlider} from 'react-toggle-slider';
 
 GoogleSignin.configure({
   webClientId:
@@ -25,7 +26,7 @@ const Login = () => {
       await auth().signInWithCredential(googleCredential);
 
       // Navigates to home page
-      navigation.navigate('Basecamp');
+      navigation.navigate('Home');
 
       //   Alert.alert('Success', 'You are signed in!');
     } catch (error) {
@@ -60,7 +61,7 @@ const Login = () => {
       <View style={styles.buttonContainer}>
         <Button
           title="Login"
-          // onPress={() => navigation.navigate('Basecamp')}
+          // onPress={() => navigation.navigate('Home')}
           color={'#2e5248'}></Button>
       </View>
 
