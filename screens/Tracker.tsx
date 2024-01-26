@@ -168,7 +168,6 @@ const Tracker = () => {
       />
       <Button
         title="Flagger"
-        color={'#2e5248'}
         onPress={() => navigation.navigate('Flagger')} // Make sure the Tracker screen is defined in your navigator
         color="blue"
       />
@@ -181,7 +180,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#2D6E5D',
     marginBottom: 20,
   },
   textdisplay: {
