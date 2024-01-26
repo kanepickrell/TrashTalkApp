@@ -1,5 +1,13 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Button, Alert, Dimensions} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Button,
+  Alert,
+  Dimensions,
+  TouchableOpacity,
+} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import {
   getFirestore,
@@ -19,6 +27,7 @@ import {GeoPoint, Timestamp} from 'firebase/firestore';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {useNavigation} from '@react-navigation/native';
+import MyToggle from './MyToggle';
 
 const Tracker = () => {
   const [isTracking, setIsTracking] = useState(false);
@@ -178,7 +187,16 @@ const Tracker = () => {
       <View style={styles.topSection}></View>
 
       <View style={styles.performanceContainer}>
-        <Text style={styles.status}>Captures</Text>
+        <Text style={styles.status}>Captures: {TotalTrashPickedUp}</Text>
+        <View style={styles.progressBarBackground}>
+          <View
+            style={[
+              styles.progressBarForeground,
+              {width: `${progress * 100}%`},
+            ]}
+          />
+        </View>
+        <Text style={styles.status}>Flags: {TotalTrashPickedUp}</Text>
         <View style={styles.progressBarBackground}>
           <View
             style={[
@@ -189,7 +207,20 @@ const Tracker = () => {
         </View>
       </View>
 
-      <View style={styles.toolContainer}></View>
+      <View style={styles.toolContainer}>
+        <View style={styles.toggleButtonContainer}>
+          <MyToggle />
+        </View>
+
+        <View>
+          <TouchableOpacity
+            style={styles.circleButton}
+            onPress={trackLocation}
+            disabled={isTracking}>
+            <Text style={styles.buttonText}>{isTracking ? '🗑️' : 'Track'}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
       <View style={styles.buttonContainer}>
         <Button
@@ -221,6 +252,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     // padding: 20,
     backgroundColor: '#2D6E5D',
+  },
+
+  circleButton: {
+    height: 100,
+    width: 100,
+    borderRadius: 50,
+    backgroundColor: 'blue',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 40,
+    marginHorizontal: 150,
+    borderWidth: 1,
+    borderColor: 'white',
+  },
+
+  buttonText: {
+    color: 'white', // Text color
+    fontSize: 16, // Adjust font size as needed
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
 
   textdisplay: {
@@ -256,7 +307,7 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   performanceContainer: {
-    height: windowHeight / 2, // Half of the screen height
+    height: windowHeight / 3, // Half of the screen height
     alignSelf: 'stretch',
     padding: 20,
     backgroundColor: '#1F4F40',
@@ -271,7 +322,8 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 20,
     borderRadius: 10,
-    marginTop: 15,
+    marginTop: 5,
+    marginBottom: 20,
   },
 
   progressBarForeground: {
@@ -283,14 +335,20 @@ const styles = StyleSheet.create({
   toolContainer: {
     flex: 1, // Take up all remaining space
     width: '100%',
-    // ... (any additional styling)
+  },
+  toggleButtonContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingLeft: 265,
   },
 
   status: {
-    fontSize: 18, // Increase font size for better readability
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '300',
     color: '#FFFFFF',
-    textAlign: 'center',
+    textAlign: 'left',
+    alignSelf: 'flex-start',
   },
 
   buttonContainer: {
