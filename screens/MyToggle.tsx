@@ -18,8 +18,8 @@ if (
 }
 
 const MyToggle = ({onToggle}) => {
-  const onColor = 'white';
-  const offColor = 'white';
+  const onColor = '#1F4F40';
+  const offColor = '#1F4F40';
 
   const [isToggled, setIsToggled] = useState(true);
 

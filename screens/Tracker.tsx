@@ -31,6 +31,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {useNavigation} from '@react-navigation/native';
 import MyToggle from './MyToggle';
 import * as Progress from 'react-native-progress';
+import MapView, {Marker} from 'react-native-maps';
 
 const Tracker = () => {
   const [isTracking, setIsTracking] = useState(false);
@@ -48,9 +49,16 @@ const Tracker = () => {
   const [trashProgress, setTrashProgress] = useState(0);
   const [flagProgress, setFlagProgress] = useState(0);
 
+  const [region, setRegion] = useState({
+    latitude: 37.78825,
+    longitude: -122.4324,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
+
   const trackLocation = () => {
     if (isTracking) {
-      return; // Prevents the function from running if it's already in progress
+      return;
     }
 
     setIsTracking(true);
@@ -58,6 +66,12 @@ const Tracker = () => {
       position => {
         const {latitude, longitude} = position.coords;
         setPosition({latitude, longitude});
+        setRegion({
+          latitude,
+          longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        });
         const newCoord = {latitude, longitude, timestamp: new Date()};
         setTempCoordinates(prevCoords => [...prevCoords, newCoord]);
         setIsTracking(false);
@@ -230,7 +244,7 @@ const Tracker = () => {
           height={10} // Height of the bar
           borderWidth={1} // Border width
           borderRadius={10} // Border radius
-          color={'green'} // Fill color
+          color={'#1F4F40'} // Fill color
           useNativeDriver={false} // Disable native driver for testing
         />
         <Text style={styles.status}>Flags: {TotalFlagsPlaced}</Text>
@@ -240,25 +254,36 @@ const Tracker = () => {
           height={10} // Height of the bar
           borderWidth={1} // Border width
           borderRadius={10} // Border radius
-          color={'green'} // Fill color
+          color={'#1F4F40'} // Fill color
           useNativeDriver={false} // Disable native driver for testing
         />
+        <View style={styles.toggleButtonContainer}>
+          {/* <MyToggle onToggle={handleToggleChange} /> */}
+        </View>
       </View>
 
       <View style={styles.toolContainer}>
+        <MapView style={styles.map} region={region} showsUserLocation={true}>
+          {position.latitude && position.longitude && (
+            <Marker
+              coordinate={{
+                latitude: position.latitude,
+                longitude: position.longitude,
+              }}
+              title={'Your Location'}
+            />
+          )}
+        </MapView>
+        <TouchableOpacity
+          style={styles.circleButton}
+          onPress={trackLocation}
+          disabled={isTracking}>
+          <Text style={styles.buttonText}>
+            {isTracking ? (isFlagMode ? '🚩' : '🗑️') : 'Track'}
+          </Text>
+        </TouchableOpacity>
         <View style={styles.toggleButtonContainer}>
           <MyToggle onToggle={handleToggleChange} />
-        </View>
-
-        <View>
-          <TouchableOpacity
-            style={styles.circleButton}
-            onPress={trackLocation}
-            disabled={isTracking}>
-            <Text style={styles.buttonText}>
-              {isTracking ? (isFlagMode ? '🚩' : '🗑️') : 'Track'}
-            </Text>
-          </TouchableOpacity>
         </View>
       </View>
 
@@ -303,19 +328,6 @@ const styles = StyleSheet.create({
     borderColor: '#1F4F40',
   },
 
-  circleButton: {
-    height: 100,
-    width: 100,
-    borderRadius: 50,
-    backgroundColor: '#1F4F40',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 40,
-    marginHorizontal: 150,
-    borderWidth: 1,
-    borderColor: 'white',
-  },
-
   buttonText: {
     color: 'white', // Text color
     fontSize: 16, // Adjust font size as needed
@@ -356,10 +368,10 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   performanceContainer: {
-    height: windowHeight / 3, // Half of the screen height
+    height: windowHeight / 2, // Half of the screen height
     alignSelf: 'stretch',
     padding: 20,
-    backgroundColor: '#1F4F40',
+    backgroundColor: '#2D6E5D',
     borderRadius: 8,
     marginHorizontal: 30,
     justifyContent: 'center', // Center content vertically
@@ -367,14 +379,31 @@ const styles = StyleSheet.create({
   },
 
   toolContainer: {
-    flex: 1, // Take up all remaining space
+    flex: 1,
     width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  circleButton: {
+    position: 'absolute',
+    height: 100,
+    width: 100,
+    borderRadius: 50,
+    backgroundColor: '#1F4F40',
+    justifyContent: 'center',
+    alignItems: 'center',
+    bottom: 20,
+    alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: 'white',
   },
   toggleButtonContainer: {
     flex: 1,
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingLeft: 265,
+    paddingTop: 50,
   },
 
   status: {
@@ -401,6 +430,18 @@ const styles = StyleSheet.create({
     right: 10, // Adjust as needed for positioning
     color: 'black',
     fontSize: 16,
+  },
+
+  mapContainer: {
+    height: 250, // or another height
+    width: 250,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    marginHorizontal: 25,
+    marginBottom: 25,
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
   },
 });
 
