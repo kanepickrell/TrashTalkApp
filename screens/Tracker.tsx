@@ -1,5 +1,14 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Button, Alert, Dimensions} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Button,
+  Alert,
+  Dimensions,
+  TouchableOpacity,
+  Switch,
+} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import {
   getFirestore,
@@ -12,22 +21,35 @@ import {
   query,
   where,
   increment,
+  GeoPoint,
+  Timestamp,
 } from 'firebase/firestore';
 import db from '../firebaseConfig';
 import auth from '@react-native-firebase/auth';
-import {GeoPoint, Timestamp} from 'firebase/firestore';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {useNavigation} from '@react-navigation/native';
+import MyToggle from './MyToggle';
+import * as Progress from 'react-native-progress';
 
 const Tracker = () => {
   const [isTracking, setIsTracking] = useState(false);
+  const [isFlagMode, setIsFlagMode] = useState(true);
   const [position, setPosition] = useState({latitude: null, longitude: null});
   const [tempCoordinates, setTempCoordinates] = useState([]);
   const [TotalTrashPickedUp, setTotalTrashPickedUp] = useState(0);
+  const [TotalFlagsPlaced, setTotalFlagsPlaced] = useState(0); // Updated state variable name
   const currentUser = auth().currentUser?.displayName;
   const navigation = useNavigation();
   const [progress, setProgress] = useState(0.5); // 50% progress
+  const [totalItemsPickedUp, setTotalItemsPickedUp] = useState(0); // Updated state variable name
+  const [userTarget, setUserTarget] = useState(0); // Updated state variable name
+
+  const [trashProgress, setTrashProgress] = useState(0);
+  const [flagProgress, setFlagProgress] = useState(0);
+
+  // const trashProgress = userTarget > 0 ? totalItemsPickedUp / userTarget : 0;
+  // const flagProgress = userTarget > 0 ? totalItemsPickedUp / userTarget : 0;
 
   const trackLocation = () => {
     if (isTracking) {
@@ -52,8 +74,8 @@ const Tracker = () => {
     );
   };
 
-  const addCoordToCaptures = async () => {
-    const collectionRef = collection(db, 'captures');
+  const addCoordToDatabase = async () => {
+    const collectionName = isFlagMode ? 'flags' : 'captures';
     const currentUser = auth().currentUser;
     if (!currentUser) {
       console.error('No user is signed in');
@@ -68,20 +90,23 @@ const Tracker = () => {
         const geoPoint = new GeoPoint(coord.latitude, coord.longitude);
         const timestamp = Timestamp.fromDate(new Date(coord.timestamp));
 
-        await addDoc(collectionRef, {
+        await addDoc(collection(db, collectionName), {
           Coordinates: geoPoint,
           PickedUpBy: name,
           Timestamp: timestamp,
           userId,
         });
       }
-      console.log('All capture coordinates uploaded');
+      console.log(`All ${collectionName} coordinates uploaded`);
     } catch (error) {
-      console.error('Error uploading coordinates:', error);
+      console.error(`Error uploading coordinates to ${collectionName}:`, error);
     }
   };
 
-  const add2TotalTrashPickedUp = async () => {
+  const updateTotalItemsPickedUp = async () => {
+    const collectionName = isFlagMode ? 'flags' : 'captures';
+    const counterField = isFlagMode ? 'TotalFlagsPlaced' : 'TotalTrashPickedUp';
+
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('Username', '==', currentUser));
 
@@ -93,58 +118,93 @@ const Tracker = () => {
         const userDocRef = userDoc.ref;
 
         await updateDoc(userDocRef, {
-          TotalTrashPickedUp: increment(tempCoordinates.length),
+          [counterField]: increment(tempCoordinates.length),
         });
-      } else {
-        console.log('User not found');
-      }
-    } catch (error) {
-      console.error('Error updating user total trash picked up:', error);
-    }
-  };
-
-  const fetchTotalTrashPickedUp = async () => {
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('Username', '==', currentUser));
-
-    try {
-      const querySnapshot = await getDocs(q);
-
-      if (!querySnapshot.empty) {
-        const userDoc = querySnapshot.docs[0];
-        const userDocData = userDoc.data();
-
-        setTotalTrashPickedUp(userDocData.TotalTrashPickedUp);
-
-        console.log(
-          'User total trash picked up:',
-          userDocData.TotalTrashPickedUp,
-        );
       } else {
         console.log('Creating new user document');
         const newUserRef = doc(collection(db, 'users'));
         await setDoc(newUserRef, {
           Username: currentUser,
           TotalTrashPickedUp: 0,
+          TotalFlagsPlaced: 0,
           userId: auth().currentUser?.uid,
+          userTarget: 15,
         });
         setTotalTrashPickedUp(0);
       }
     } catch (error) {
-      console.error('Error fetching user total trash picked up:', error);
+      console.error(
+        `Error updating user total ${collectionName} picked up:`,
+        error,
+      );
     }
   };
 
+  const pullFirebaseUserData = async () => {
+    const userRef = query(
+      collection(db, 'users'),
+      where('Username', '==', currentUser),
+    );
+
+    try {
+      const userSnapshot = await getDocs(userRef);
+      if (!userSnapshot.empty) {
+        const userData = userSnapshot.docs[0].data();
+        const totalPickedUp = isFlagMode
+          ? userData.TotalFlagsPlaced
+          : userData.TotalTrashPickedUp;
+        setTotalItemsPickedUp(totalPickedUp || 0);
+        setTotalTrashPickedUp(userData.TotalTrashPickedUp || 0);
+        setTotalFlagsPlaced(userData.TotalFlagsPlaced || 0);
+        setUserTarget(userData.userTarget || 0); // Fetch and set the target
+        calculateProgress(TotalTrashPickedUp, userTarget); // New function to calculate progress
+      } else {
+        console.log('Creating new user document');
+        const newUserRef = doc(collection(db, 'users'));
+        await setDoc(newUserRef, {
+          Username: currentUser,
+          TotalTrashPickedUp: 0,
+          TotalFlagsPlaced: 0,
+          userId: auth().currentUser?.uid,
+          userTarget: 15,
+        });
+        setTotalTrashPickedUp(0);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  };
+  const handleToggleChange = isToggled => {
+    setIsFlagMode(isToggled);
+    // Optionally fetch new data based on the updated mode
+    pullFirebaseUserData();
+  };
+
+  const calculateProgress = () => {
+    // Ensure that userTarget is a number greater than zero to avoid division by zero
+    const validUserTarget = userTarget > 0 ? userTarget : 1;
+
+    const trashProg = TotalTrashPickedUp / validUserTarget;
+    const flagProg = TotalFlagsPlaced / validUserTarget;
+
+    setTrashProgress(trashProg);
+    setFlagProgress(flagProg);
+  };
+
   useEffect(() => {
-    fetchTotalTrashPickedUp();
-  }, []);
+    calculateProgress();
+  }, [TotalTrashPickedUp, TotalFlagsPlaced, userTarget]);
+
+  useEffect(() => {
+    pullFirebaseUserData();
+  }, [isFlagMode]);
 
   useEffect(() => {
     const updateFirestore = async () => {
       if (tempCoordinates.length > 0) {
-        await addCoordToCaptures();
-        await add2TotalTrashPickedUp();
-        await fetchTotalTrashPickedUp();
+        await addCoordToDatabase();
+        await updateTotalItemsPickedUp();
+        await pullFirebaseUserData();
         setTempCoordinates([]);
       }
     };
@@ -157,39 +217,49 @@ const Tracker = () => {
   }, [tempCoordinates]);
 
   return (
-    // <View style={styles.container}>
-    //   <Text style={styles.textdisplay}>
-    //     Today's Total: {TotalTrashPickedUp}{' '}
-    //   </Text>
-    //   <Button
-    //     title={isTracking ? 'Tracking...' : 'Track'}
-    //     onPress={trackLocation}
-    //     disabled={isTracking}
-    //     color="green"
-    //   />
-    //   <Button
-    //     title="Flagger"
-    //     onPress={() => navigation.navigate('Flagger')} // Make sure the Tracker screen is defined in your navigator
-    //     color="blue"
-    //   />
-    // </View>
-
     <View style={styles.container}>
       <View style={styles.topSection}></View>
 
       <View style={styles.performanceContainer}>
-        <Text style={styles.status}>Captures</Text>
-        <View style={styles.progressBarBackground}>
-          <View
-            style={[
-              styles.progressBarForeground,
-              {width: `${progress * 100}%`},
-            ]}
-          />
-        </View>
+        {/* <Text style={styles.targetText}>🎯 {userTarget}</Text> */}
+        <Text style={styles.status}>Litter: {TotalTrashPickedUp}</Text>
+        <Progress.Bar
+          progress={trashProgress} // Example: half-filled
+          width={315} // Fixed width for testing
+          height={10} // Height of the bar
+          borderWidth={1} // Border width
+          borderRadius={10} // Border radius
+          color={'green'} // Fill color
+          useNativeDriver={false} // Disable native driver for testing
+        />
+        <Text style={styles.status}>Flags: {TotalFlagsPlaced}</Text>
+        <Progress.Bar
+          progress={flagProgress} // Example: half-filled
+          width={315} // Fixed width for testing
+          height={10} // Height of the bar
+          borderWidth={1} // Border width
+          borderRadius={10} // Border radius
+          color={'green'} // Fill color
+          useNativeDriver={false} // Disable native driver for testing
+        />
       </View>
 
-      <View style={styles.toolContainer}></View>
+      <View style={styles.toolContainer}>
+        <View style={styles.toggleButtonContainer}>
+          <MyToggle onToggle={handleToggleChange} />
+        </View>
+
+        <View>
+          <TouchableOpacity
+            style={styles.circleButton}
+            onPress={trackLocation}
+            disabled={isTracking}>
+            <Text style={styles.buttonText}>
+              {isTracking ? (isFlagMode ? '🚩' : '🗑️') : 'Track'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
       <View style={styles.buttonContainer}>
         <Button
@@ -221,6 +291,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     // padding: 20,
     backgroundColor: '#2D6E5D',
+  },
+
+  progressBar: {
+    alignSelf: 'stretch',
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'white',
+    marginBottom: 10,
+    borderColor: '#1F4F40',
+  },
+
+  circleButton: {
+    height: 100,
+    width: 100,
+    borderRadius: 50,
+    backgroundColor: 'blue',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 40,
+    marginHorizontal: 150,
+    borderWidth: 1,
+    borderColor: 'white',
+  },
+
+  buttonText: {
+    color: 'white', // Text color
+    fontSize: 16, // Adjust font size as needed
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
 
   textdisplay: {
@@ -256,7 +355,7 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   performanceContainer: {
-    height: windowHeight / 2, // Half of the screen height
+    height: windowHeight / 3, // Half of the screen height
     alignSelf: 'stretch',
     padding: 20,
     backgroundColor: '#1F4F40',
@@ -266,31 +365,23 @@ const styles = StyleSheet.create({
     alignItems: 'center', // Center content horizontally
   },
 
-  progressBarBackground: {
-    backgroundColor: '#ddd',
-    width: '100%',
-    height: 20,
-    borderRadius: 10,
-    marginTop: 15,
-  },
-
-  progressBarForeground: {
-    backgroundColor: '#76AD3B',
-    height: '100%',
-    borderRadius: 10,
-  },
-
   toolContainer: {
     flex: 1, // Take up all remaining space
     width: '100%',
-    // ... (any additional styling)
+  },
+  toggleButtonContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingLeft: 265,
   },
 
   status: {
-    fontSize: 18, // Increase font size for better readability
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '300',
     color: '#FFFFFF',
-    textAlign: 'center',
+    textAlign: 'left',
+    alignSelf: 'flex-start',
   },
 
   buttonContainer: {
@@ -303,6 +394,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#1F4F40',
     borderTopWidth: 1,
     borderTopColor: '#FFFFFF',
+  },
+  targetText: {
+    position: 'absolute', // Position over the progress bar
+    right: 10, // Adjust as needed for positioning
+    color: 'black',
+    fontSize: 16,
   },
 });
 
