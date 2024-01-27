@@ -17,7 +17,7 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const MyToggle = () => {
+const MyToggle = ({onToggle}) => {
   const onColor = 'white';
   const offColor = 'white';
 
@@ -35,6 +35,7 @@ const MyToggle = () => {
         onPress={() => {
           LayoutAnimation.easeInEaseOut();
           setIsToggled(!isToggled);
+          onToggle(!isToggled);
         }}>
         <View
           style={[
