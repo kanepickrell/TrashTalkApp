@@ -48,9 +48,6 @@ const Tracker = () => {
   const [trashProgress, setTrashProgress] = useState(0);
   const [flagProgress, setFlagProgress] = useState(0);
 
-  // const trashProgress = userTarget > 0 ? totalItemsPickedUp / userTarget : 0;
-  // const flagProgress = userTarget > 0 ? totalItemsPickedUp / userTarget : 0;
-
   const trackLocation = () => {
     if (isTracking) {
       return; // Prevents the function from running if it's already in progress
@@ -157,7 +154,6 @@ const Tracker = () => {
         setTotalTrashPickedUp(userData.TotalTrashPickedUp || 0);
         setTotalFlagsPlaced(userData.TotalFlagsPlaced || 0);
         setUserTarget(userData.userTarget || 0); // Fetch and set the target
-        calculateProgress(TotalTrashPickedUp, userTarget); // New function to calculate progress
       } else {
         console.log('Creating new user document');
         const newUserRef = doc(collection(db, 'users'));
@@ -180,20 +176,25 @@ const Tracker = () => {
     pullFirebaseUserData();
   };
 
-  const calculateProgress = () => {
-    // Ensure that userTarget is a number greater than zero to avoid division by zero
+  const calculateTrashProgress = () => {
     const validUserTarget = userTarget > 0 ? userTarget : 1;
-
     const trashProg = TotalTrashPickedUp / validUserTarget;
-    const flagProg = TotalFlagsPlaced / validUserTarget;
-
     setTrashProgress(trashProg);
+  };
+
+  const calculateFlagProgress = () => {
+    const validUserTarget = userTarget > 0 ? userTarget : 1;
+    const flagProg = TotalFlagsPlaced / validUserTarget;
     setFlagProgress(flagProg);
   };
 
   useEffect(() => {
-    calculateProgress();
-  }, [TotalTrashPickedUp, TotalFlagsPlaced, userTarget]);
+    calculateTrashProgress();
+  }, [TotalTrashPickedUp, userTarget]);
+
+  useEffect(() => {
+    calculateFlagProgress();
+  }, [TotalFlagsPlaced, userTarget]);
 
   useEffect(() => {
     pullFirebaseUserData();
@@ -306,7 +307,7 @@ const styles = StyleSheet.create({
     height: 100,
     width: 100,
     borderRadius: 50,
-    backgroundColor: 'blue',
+    backgroundColor: '#1F4F40',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 40,
@@ -396,7 +397,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#FFFFFF',
   },
   targetText: {
-    position: 'absolute', // Position over the progress bar
+    position: 'absolute',
     right: 10, // Adjust as needed for positioning
     color: 'black',
     fontSize: 16,

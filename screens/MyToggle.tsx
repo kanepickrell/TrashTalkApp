@@ -21,7 +21,7 @@ const MyToggle = ({onToggle}) => {
   const onColor = 'white';
   const offColor = 'white';
 
-  const [isToggled, setIsToggled] = useState(false);
+  const [isToggled, setIsToggled] = useState(true);
 
   return (
     <View style={styles.container}>
