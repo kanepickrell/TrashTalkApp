@@ -26,8 +26,6 @@ import {
 } from 'firebase/firestore';
 import db from '../firebaseConfig';
 import auth from '@react-native-firebase/auth';
-import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
 import {useNavigation} from '@react-navigation/native';
 import MyToggle from './MyToggle';
 import * as Progress from 'react-native-progress';
@@ -56,33 +54,36 @@ const Tracker = () => {
     longitudeDelta: 0.0421,
   });
 
-  const trackLocation = () => {
+  const trackLocation = async () => {
     if (isTracking) {
       return;
     }
 
     setIsTracking(true);
-    Geolocation.getCurrentPosition(
-      position => {
-        const {latitude, longitude} = position.coords;
-        setPosition({latitude, longitude});
-        setRegion({
-          latitude,
-          longitude,
-          latitudeDelta: 0.005,
-          longitudeDelta: 0.005,
-        });
-        const newCoord = {latitude, longitude, timestamp: new Date()};
-        setTempCoordinates(prevCoords => [...prevCoords, newCoord]);
-        setIsTracking(false);
-      },
-      error => {
-        console.error(error);
-        Alert.alert('Error', 'Unable to fetch location');
-        setIsTracking(false);
-      },
-      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
-    );
+
+    try {
+      const position = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 10000,
+      });
+
+      const {latitude, longitude} = position.coords;
+      setPosition({latitude, longitude});
+      setRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005,
+      });
+      const newCoord = {latitude, longitude, timestamp: new Date()};
+      setTempCoordinates(prevCoords => [...prevCoords, newCoord]);
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Unable to fetch location');
+    } finally {
+      setIsTracking(false);
+    }
   };
 
   const addCoordToDatabase = async () => {
@@ -90,6 +91,7 @@ const Tracker = () => {
     const currentUser = auth().currentUser;
     if (!currentUser) {
       console.error('No user is signed in');
+      Alert.alert('Error', 'No user is signed in');
       return;
     }
 
@@ -109,8 +111,10 @@ const Tracker = () => {
         });
       }
       console.log(`All ${collectionName} coordinates uploaded`);
+      Alert.alert('Success', `All ${collectionName} coordinates uploaded`);
     } catch (error) {
       console.error(`Error uploading coordinates to ${collectionName}:`, error);
+      Alert.alert('Error', `Error uploading coordinates to ${collectionName}`);
     }
   };
 
