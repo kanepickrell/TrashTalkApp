@@ -12,7 +12,6 @@ import Home from './screens/Home';
 import Map from './screens/Map';
 import Tracker from './screens/Tracker.tsx';
 import Login from './screens/Login.tsx';
-import Flagger from './screens/Flagger.tsx';
 import Leaderboard from './screens/Leaderboard.tsx';
 
 type RootStackParamList = {
@@ -20,8 +19,8 @@ type RootStackParamList = {
   Map: undefined;
   Tracker: undefined;
   Login: undefined;
-  Flagger: undefined;
   Leaderboard: undefined;
+  MyCamera: undefined;
 };
 
 type AppNavigationProps = NativeStackNavigationProp<RootStackParamList>;
@@ -50,11 +49,6 @@ const App: React.FC = () => {
         <Stack.Screen
           name="Login"
           component={Login}
-          options={{headerShown: false}}
-        />
-        <Stack.Screen
-          name="Flagger"
-          component={Flagger}
           options={{headerShown: false}}
         />
         <Stack.Screen
